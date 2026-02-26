@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Andromeda Ads — Meta AI Automation</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+<div id="app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar glass">
+    <div class="logo">
+      <span class="logo-icon">🌌</span>
+      <div>
+        <h1>Andromeda <span>Ads</span></h1>
+        <p class="logo-sub">Meta AI Automation</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-view="setup">
+        <span class="nav-icon">⚙️</span>
+        <span>Configuración</span>
+        <span class="nav-badge" id="badgeSetup"></span>
+      </button>
+      <button class="nav-btn" data-view="briefing">
+        <span class="nav-icon">📋</span>
+        <span>Briefing de Marca</span>
+        <span class="nav-badge" id="badgeBriefing"></span>
+      </button>
+      <button class="nav-btn" data-view="concepts">
+        <span class="nav-icon">💡</span>
+        <span>Conceptos y Creativos</span>
+        <span class="nav-badge" id="badgeConcepts"></span>
+      </button>
+      <button class="nav-btn" data-view="campaign">
+        <span class="nav-icon">🚀</span>
+        <span>Lanzar Campaña</span>
+        <span class="nav-badge" id="badgeCampaign"></span>
+      </button>
+      <button class="nav-btn" data-view="dashboard">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+        <span class="nav-badge" id="badgeDashboard"></span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="agent-status">
+        <div class="agent-dot" id="agentDot"></div>
+        <span id="agentLabel">Agentes listos</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="workspace">
+
+    <!-- ── VIEW: SETUP ── -->
+    <section id="viewSetup" class="view active">
+      <div class="view-header">
+        <h2>⚙️ Configuración de Meta Ads</h2>
+        <p class="view-sub">Conecta tu cuenta publicitaria de Meta para empezar a automatizar</p>
+      </div>
+
+      <div class="setup-grid">
+        <!-- Credentials Card -->
+        <div class="card glass">
+          <h3 class="card-title">🔑 Credenciales de Meta</h3>
+          <div class="form-group">
+            <label>Access Token (token de larga duración)</label>
+            <input type="password" id="metaToken" placeholder="EAAxxxxxxxxx..." />
+          </div>
+          <div class="form-group">
+            <label>Ad Account ID</label>
+            <input type="text" id="metaAdAccount" placeholder="act_123456789" />
+          </div>
+          <div class="form-group">
+            <label>Facebook Page ID</label>
+            <input type="text" id="metaPageId" placeholder="123456789" />
+          </div>
+          <div class="form-group">
+            <label>WhatsApp Number (opcional, con código de país)</label>
+            <input type="text" id="whatsappNumber" placeholder="+34600000000" />
+          </div>
+          <div id="metaStatus" class="status-msg hidden"></div>
+          <button class="btn btn-primary" id="btnVerifyMeta">🔗 Verificar Conexión</button>
+        </div>
+
+        <!-- Setup Guide Card -->
+        <div class="card glass">
+          <h3 class="card-title">📖 Guía de Configuración</h3>
+          <ol class="setup-steps">
+            <li>
+              <strong>Crea una Meta App</strong>
+              <p>Ve a <a href="https://developers.facebook.com/apps/create" target="_blank" rel="noopener">developers.facebook.com</a> → Crear App → Tipo: <em>Business</em></p>
+            </li>
+            <li>
+              <strong>Añade Marketing API</strong>
+              <p>En tu app → Productos → Añadir Marketing API</p>
+            </li>
+            <li>
+              <strong>Obtén permisos</strong>
+              <p>Necesitas: <code>ads_management</code>, <code>ads_read</code>, <code>pages_read_engagement</code></p>
+            </li>
+            <li>
+              <strong>Genera tu Access Token</strong>
+              <p><a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noopener">Graph API Explorer</a> → selecciona tu app → genera token de 60 días</p>
+            </li>
+            <li>
+              <strong>Obtén tu Ad Account ID</strong>
+              <p><a href="https://business.facebook.com" target="_blank" rel="noopener">business.facebook.com</a> → Cuentas → Cuentas publicitarias → copia <code>act_XXXXX</code></p>
+            </li>
+            <li>
+              <strong>Obtén tu Page ID</strong>
+              <p>Tu página de Facebook → Acerca de → Transparencia de la página → ID de página</p>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: BRIEFING ── -->
+    <section id="viewBriefing" class="view">
+      <div class="view-header">
+        <h2>📋 Briefing de Marca</h2>
+        <p class="view-sub">Responde 5 preguntas para que los agentes IA entiendan tu marca y generen anuncios efectivos</p>
+      </div>
+
+      <div class="card glass briefing-card">
+        <div class="briefing-form">
+          <div class="form-group">
+            <label>1. ¿Qué vendes exactamente? <span class="label-hint">(producto estrella, precio, materiales, colecciones)</span></label>
+            <textarea id="b1" rows="3" placeholder="Ej: Ropa femenina de tallas grandes, colección primavera-verano 2025. Precio medio: 35€. Tejidos naturales y sostenibles..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>2. ¿Quién es tu cliente ideal? <span class="label-hint">(edad, género, estilo de vida, valores)</span></label>
+            <textarea id="b2" rows="3" placeholder="Ej: Mujeres de 25-45 años que valoran la moda sostenible, buscan looks modernos para el trabajo y el día a día..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>3. ¿Cuál es el mayor problema que resuelves? <span class="label-hint">(dolor del cliente)</span></label>
+            <textarea id="b3" rows="3" placeholder="Ej: Las mujeres de tallas grandes tienen dificultad para encontrar ropa estilosa que les quede bien y no sea cara..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>4. ¿Qué te diferencia de la competencia? <span class="label-hint">(propuesta de valor única)</span></label>
+            <textarea id="b4" rows="3" placeholder="Ej: Diseños exclusivos hechos en España, tallas del 36 al 56, envío gratis en 24h, devolución gratuita..."></textarea>
+          </div>
+          <div class="form-group">
+            <label>5. ¿Cuál es el tono de tu marca? <span class="label-hint">(elige uno o describe)</span></label>
+            <div class="tone-grid" id="toneGrid">
+              <button class="tone-btn" data-tone="elegante y sofisticada">✨ Elegante</button>
+              <button class="tone-btn" data-tone="casual y cercana">😊 Casual</button>
+              <button class="tone-btn" data-tone="atrevida y provocadora">🔥 Atrevida</button>
+              <button class="tone-btn" data-tone="minimalista y clean">🤍 Minimalista</button>
+              <button class="tone-btn" data-tone="divertida y jovial">🎉 Divertida</button>
+              <button class="tone-btn" data-tone="empoderada y feminista">💪 Empoderada</button>
+            </div>
+            <input type="hidden" id="b5" value="" />
+          </div>
+        </div>
+        <div id="briefingStatus" class="status-msg hidden"></div>
+        <button class="btn btn-primary btn-lg" id="btnGenerateConcepts">✨ Generar 10 Conceptos con IA</button>
+      </div>
+    </section>
+
+    <!-- ── VIEW: CONCEPTS ── -->
+    <section id="viewConcepts" class="view">
+      <div class="view-header">
+        <h2>💡 Conceptos y Creativos</h2>
+        <p class="view-sub">Selecciona los conceptos que quieres incluir en tu campaña y genera sus creativos</p>
+      </div>
+
+      <div class="concepts-toolbar">
+        <span id="conceptsSelectedCount" class="badge-count">0 seleccionados</span>
+        <button class="btn btn-secondary btn-sm" id="btnSelectAllConcepts">✓ Todos</button>
+        <button class="btn btn-primary" id="btnGoToCampaign" disabled>🚀 Configurar Campaña →</button>
+      </div>
+
+      <div id="conceptsGrid" class="concepts-grid">
+        <!-- Concept cards injected here -->
+      </div>
+
+      <!-- Image generation modal -->
+      <div id="creativeModal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-box glass">
+          <h3 id="modalTitle">Generar Creativo</h3>
+          <div class="modal-tabs">
+            <button class="modal-tab active" data-mode="generate">🎨 Generar desde cero</button>
+            <button class="modal-tab" data-mode="edit">📸 Editar mi foto</button>
+            <button class="modal-tab" data-mode="manual">🖼️ Usar mi imagen</button>
+          </div>
+
+          <div id="modeGenerate" class="modal-mode">
+            <p class="mode-hint">La IA generará una imagen de moda según el concepto del anuncio</p>
+            <div class="form-group">
+              <label>Estilo visual adicional (opcional)</label>
+              <input type="text" id="genStyle" placeholder="Ej: fondo blanco, modelo morena, luz natural..." />
+            </div>
+          </div>
+
+          <div id="modeEdit" class="modal-mode hidden">
+            <p class="mode-hint">Sube una foto de tu producto y la IA añadirá texto y lo adaptará como anuncio</p>
+            <div class="upload-area" id="photoUploadArea">
+              <input type="file" id="photoFileInput" accept="image/*" class="hidden" />
+              <span>📁 Arrastra o haz clic para subir foto</span>
+            </div>
+            <img id="photoPreview" class="photo-preview hidden" alt="preview" />
+          </div>
+
+          <div id="modeManual" class="modal-mode hidden">
+            <p class="mode-hint">Usa tu propia imagen. Solo se generará el copy del anuncio.</p>
+            <div class="upload-area" id="manualUploadArea">
+              <input type="file" id="manualFileInput" accept="image/*" class="hidden" />
+              <span>📁 Sube la imagen del anuncio</span>
+            </div>
+            <img id="manualPreview" class="photo-preview hidden" alt="preview" />
+          </div>
+
+          <div id="modalResult" class="modal-result hidden">
+            <img id="generatedCreative" alt="Creative" />
+            <a id="btnDownloadCreative" class="btn btn-secondary btn-sm" download="creative.png">⬇ Descargar</a>
+          </div>
+
+          <div id="modalStatus" class="status-msg hidden"></div>
+          <div class="modal-actions">
+            <button class="btn btn-primary" id="btnGenerateCreative">🎨 Generar</button>
+            <button class="btn btn-ghost" id="btnCloseModal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── VIEW: CAMPAIGN ── -->
+    <section id="viewCampaign" class="view">
+      <div class="view-header">
+        <h2>🚀 Configurar y Lanzar Campaña</h2>
+        <p class="view-sub">Configura el presupuesto, la audiencia y lanza la campaña de microexperimentación</p>
+      </div>
+
+      <div class="campaign-grid">
+        <!-- Campaign Settings -->
+        <div class="card glass">
+          <h3 class="card-title">📌 Configuración de Campaña</h3>
+          <div class="form-group">
+            <label>Nombre de campaña</label>
+            <input type="text" id="campaignName" placeholder="Andromeda_Moda_Ene2025" />
+          </div>
+          <div class="form-group">
+            <label>Objetivo</label>
+            <select id="campaignObjective">
+              <option value="OUTCOME_SALES">Maximizar Conversiones (Ventas)</option>
+              <option value="OUTCOME_LEADS">Conversaciones WhatsApp</option>
+              <option value="OUTCOME_TRAFFIC">Tráfico al sitio web</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Presupuesto diario por ad set</label>
+            <div class="input-prefix">
+              <span>$</span>
+              <input type="number" id="dailyBudget" value="5" min="1" step="1" />
+            </div>
+            <span class="input-hint" id="budgetHint">$5/día × 7 días = $35 total por concepto</span>
+          </div>
+          <div class="form-group">
+            <label>Duración (días)</label>
+            <input type="number" id="campaignDuration" value="7" min="1" max="30" />
+          </div>
+          <div class="form-group">
+            <label>URL de destino (landing page o WhatsApp)</label>
+            <input type="text" id="destinationUrl" placeholder="https://wa.me/34600000000?text=Hola!" />
+          </div>
+        </div>
+
+        <!-- Audience Settings -->
+        <div class="card glass">
+          <h3 class="card-title">🎯 Audiencia</h3>
+          <div class="form-group">
+            <label>País(es)</label>
+            <input type="text" id="targetCountries" value="ES" placeholder="ES, MX, AR..." />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Edad mínima</label>
+              <input type="number" id="ageMin" value="18" min="18" max="65" />
+            </div>
+            <div class="form-group">
+              <label>Edad máxima</label>
+              <input type="number" id="ageMax" value="45" min="18" max="65" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Género</label>
+            <select id="targetGender">
+              <option value="all">Todos</option>
+              <option value="1" selected>Hombres</option>
+              <option value="2">Mujeres</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Intereses (separados por coma)</label>
+            <input type="text" id="targetInterests" value="Moda, Ropa, Compras online, Instagram Fashion" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Selected concepts summary -->
+      <div class="card glass" id="selectedConceptsSummary">
+        <h3 class="card-title">💡 Conceptos seleccionados (<span id="selectedCount">0</span>)</h3>
+        <div id="selectedConceptsList" class="selected-list"></div>
+      </div>
+
+      <div id="campaignStatus" class="status-msg hidden"></div>
+      <button class="btn btn-primary btn-lg btn-launch" id="btnLaunchCampaign">🚀 Lanzar Campaña Ahora</button>
+    </section>
+
+    <!-- ── VIEW: DASHBOARD ── -->
+    <section id="viewDashboard" class="view">
+      <div class="view-header">
+        <h2>📊 Dashboard de Rendimiento</h2>
+        <p class="view-sub">Seguimiento en tiempo real y optimización automática con IA</p>
+      </div>
+
+      <!-- Campaign selector -->
+      <div class="dashboard-toolbar">
+        <select id="campaignSelector">
+          <option value="">Selecciona una campaña...</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" id="btnRefreshStats">↺ Actualizar</button>
+        <button class="btn btn-primary" id="btnAnalyzeAI">🤖 Analizar con IA</button>
+        <button class="btn btn-warning hidden" id="btnApplyOptimizations">⚡ Aplicar Recomendaciones</button>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card glass">
+          <span class="kpi-label">Gasto Total</span>
+          <span class="kpi-value" id="kpiSpend">—</span>
+        </div>
+        <div class="kpi-card glass">
+          <span class="kpi-label">Impresiones</span>
+          <span class="kpi-value" id="kpiImpressions">—</span>
+        </div>
+        <div class="kpi-card glass">
+          <span class="kpi-label">Clics</span>
+          <span class="kpi-value" id="kpiClicks">—</span>
+        </div>
+        <div class="kpi-card glass">
+          <span class="kpi-label">CTR</span>
+          <span class="kpi-value" id="kpiCtr">—</span>
+        </div>
+        <div class="kpi-card glass">
+          <span class="kpi-label">CPM</span>
+          <span class="kpi-value" id="kpiCpm">—</span>
+        </div>
+        <div class="kpi-card glass">
+          <span class="kpi-label">Conversiones</span>
+          <span class="kpi-value" id="kpiConversions">—</span>
+        </div>
+      </div>
+
+      <!-- Ads performance table -->
+      <div class="card glass">
+        <h3 class="card-title">📋 Rendimiento por Anuncio</h3>
+        <div class="table-wrap">
+          <table id="adsTable">
+            <thead>
+              <tr>
+                <th>Anuncio / Concepto</th>
+                <th>Gasto</th>
+                <th>Impresiones</th>
+                <th>CTR</th>
+                <th>CPM</th>
+                <th>Conversiones</th>
+                <th>ROAS</th>
+                <th>Estado IA</th>
+              </tr>
+            </thead>
+            <tbody id="adsTableBody">
+              <tr><td colspan="8" class="table-empty">Selecciona una campaña para ver datos</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AI Optimization Panel -->
+      <div class="card glass hidden" id="optimizationPanel">
+        <h3 class="card-title">🤖 Recomendaciones del Agente Media Buyer</h3>
+        <div id="optimizationContent"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

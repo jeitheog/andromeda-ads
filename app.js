@@ -1,0 +1,617 @@
+// ── State ──────────────────────────────────────────────────
+const state = {
+    metaConnected: false,
+    briefing: null,
+    concepts: [],        // [{angle,hook,headline,body,cta,painPoint,targetEmotion,imageB64,selected}]
+    campaigns: [],       // [{id, name, adSetIds, adIds}] saved in localStorage
+    pendingOptimizations: null
+};
+
+const STORAGE_KEY = 'andromeda_state_v1';
+function saveState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ briefing: state.briefing, concepts: state.concepts, campaigns: state.campaigns })); }
+    catch (e) { console.warn('saveState error:', e); }
+}
+function loadState() {
+    try {
+        const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+        if (!s) return;
+        if (s.briefing) state.briefing = s.briefing;
+        if (s.concepts)  state.concepts  = s.concepts;
+        if (s.campaigns) state.campaigns = s.campaigns;
+    } catch (e) { console.warn('loadState error:', e); }
+}
+
+// ── DOM helpers ────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const metaHeaders = () => {
+    const token = $('metaToken')?.value?.trim() || localStorage.getItem('meta_token') || '';
+    const account = $('metaAdAccount')?.value?.trim() || localStorage.getItem('meta_account') || '';
+    const pageId = $('metaPageId')?.value?.trim() || localStorage.getItem('meta_page') || '';
+    return { 'x-meta-token': token, 'x-meta-account': account, 'x-meta-page': pageId, 'Content-Type': 'application/json' };
+};
+
+function showStatus(elId, msg, type = 'info') {
+    const el = $(elId);
+    if (!el) return;
+    el.textContent = msg;
+    el.className = `status-msg ${type}`;
+    el.classList.remove('hidden');
+}
+function hideStatus(elId) { $(elId)?.classList.add('hidden'); }
+
+function showLoader(msg = 'Procesando...') {
+    let el = document.getElementById('loaderOverlay');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'loaderOverlay';
+        el.className = 'loader-overlay';
+        el.innerHTML = `<div class="loader-spinner"></div><p id="loaderMsg">${msg}</p>`;
+        document.body.appendChild(el);
+    } else {
+        document.getElementById('loaderMsg').textContent = msg;
+        el.classList.remove('hidden');
+    }
+    setAgentStatus('thinking', msg);
+}
+function hideLoader() {
+    document.getElementById('loaderOverlay')?.classList.add('hidden');
+    setAgentStatus('idle');
+}
+
+function setAgentStatus(state, label = '') {
+    const dot = $('agentDot');
+    const lbl = $('agentLabel');
+    dot.className = 'agent-dot' + (state === 'thinking' ? ' thinking' : state === 'active' ? ' active' : '');
+    lbl.textContent = label || (state === 'thinking' ? 'Agente trabajando...' : 'Agentes listos');
+}
+
+// ── View routing ───────────────────────────────────────────
+function switchView(view) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    const viewEl = document.getElementById('view' + view.charAt(0).toUpperCase() + view.slice(1));
+    if (viewEl) viewEl.classList.add('active');
+    document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
+}
+
+// ── Initialization ─────────────────────────────────────────
+function init() {
+    loadState();
+    restoreCredentials();
+
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const view = btn.dataset.view;
+            switchView(view);
+            if (view === 'concepts' && state.concepts.length > 0) renderConcepts();
+            if (view === 'campaign') renderSelectedSummary();
+            if (view === 'dashboard') populateCampaignSelector();
+        });
+    });
+
+    // Setup
+    $('btnVerifyMeta').addEventListener('click', verifyMeta);
+
+    // Briefing
+    document.querySelectorAll('.tone-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            $('b5').value = btn.dataset.tone;
+        });
+    });
+    $('btnGenerateConcepts').addEventListener('click', generateConcepts);
+
+    // Concepts
+    $('btnSelectAllConcepts').addEventListener('click', toggleSelectAllConcepts);
+    $('btnGoToCampaign').addEventListener('click', () => {
+        renderSelectedSummary();
+        switchView('campaign');
+    });
+
+    // Creative modal
+    $('btnCloseModal').addEventListener('click', closeModal);
+    $('modal-backdrop') && document.querySelector('.modal-backdrop').addEventListener('click', closeModal);
+    document.querySelectorAll('.modal-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            ['modeGenerate','modeEdit','modeManual'].forEach(id => $( id)?.classList.add('hidden'));
+            const modeMap = { generate:'modeGenerate', edit:'modeEdit', manual:'modeManual' };
+            $(modeMap[tab.dataset.mode])?.classList.remove('hidden');
+        });
+    });
+    $('btnGenerateCreative').addEventListener('click', generateCreative);
+    setupFileUpload('photoUploadArea', 'photoFileInput', 'photoPreview');
+    setupFileUpload('manualUploadArea', 'manualFileInput', 'manualPreview');
+
+    // Campaign
+    $('dailyBudget').addEventListener('input', updateBudgetHint);
+    $('campaignDuration').addEventListener('input', updateBudgetHint);
+    $('btnLaunchCampaign').addEventListener('click', launchCampaign);
+
+    // Dashboard
+    $('btnRefreshStats').addEventListener('click', refreshStats);
+    $('btnAnalyzeAI').addEventListener('click', analyzeWithAI);
+    $('btnApplyOptimizations').addEventListener('click', applyOptimizations);
+    $('campaignSelector').addEventListener('change', () => refreshStats());
+
+    // Restore UI
+    if (state.concepts.length > 0) {
+        $('badgeConcepts').textContent = state.concepts.length;
+        $('badgeConcepts').classList.add('visible');
+    }
+    if (state.campaigns.length > 0) {
+        $('badgeDashboard').classList.add('visible');
+    }
+
+    setCampaignName();
+}
+
+function restoreCredentials() {
+    const token = localStorage.getItem('meta_token');
+    const account = localStorage.getItem('meta_account');
+    const page = localStorage.getItem('meta_page');
+    const wa = localStorage.getItem('meta_whatsapp');
+    if (token) $('metaToken').value = token;
+    if (account) $('metaAdAccount').value = account;
+    if (page) $('metaPageId').value = page;
+    if (wa) $('whatsappNumber').value = wa;
+    if (token && account) {
+        state.metaConnected = true;
+        showStatus('metaStatus', '✅ Credenciales guardadas', 'success');
+        $('badgeSetup').textContent = '✓';
+        $('badgeSetup').classList.add('visible');
+    }
+}
+
+function setCampaignName() {
+    const now = new Date();
+    const mon = now.toLocaleString('es', { month: 'short' }).toUpperCase();
+    $('campaignName').value = `Andromeda_Moda_${mon}${now.getFullYear()}`;
+}
+
+// ── Setup / Meta validation ────────────────────────────────
+async function verifyMeta() {
+    const token = $('metaToken').value.trim();
+    const account = $('metaAdAccount').value.trim();
+    const page = $('metaPageId').value.trim();
+    if (!token || !account) { showStatus('metaStatus', 'Introduce el token y el Ad Account ID', 'error'); return; }
+
+    $('btnVerifyMeta').disabled = true;
+    $('btnVerifyMeta').innerHTML = '<span class="spinner-inline"></span>Verificando...';
+    hideStatus('metaStatus');
+
+    try {
+        const res = await fetch('/api/meta-validate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, adAccountId: account, pageId: page })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        localStorage.setItem('meta_token', token);
+        localStorage.setItem('meta_account', account);
+        if (page) localStorage.setItem('meta_page', page);
+        const wa = $('whatsappNumber').value.trim();
+        if (wa) localStorage.setItem('meta_whatsapp', wa);
+
+        state.metaConnected = true;
+        showStatus('metaStatus', `✅ Conectado: ${data.accountName} (${account})`, 'success');
+        $('badgeSetup').textContent = '✓';
+        $('badgeSetup').classList.add('visible');
+        setAgentStatus('active', 'Meta conectado');
+    } catch (err) {
+        showStatus('metaStatus', `❌ ${err.message}`, 'error');
+    } finally {
+        $('btnVerifyMeta').disabled = false;
+        $('btnVerifyMeta').textContent = '🔗 Verificar Conexión';
+    }
+}
+
+// ── Briefing → Concepts ────────────────────────────────────
+async function generateConcepts() {
+    const b = {
+        product: $('b1').value.trim(),
+        audience: $('b2').value.trim(),
+        painPoint: $('b3').value.trim(),
+        differentiator: $('b4').value.trim(),
+        tone: $('b5').value.trim()
+    };
+    if (!b.product || !b.audience || !b.painPoint) {
+        showStatus('briefingStatus', 'Rellena al menos las 3 primeras preguntas', 'error');
+        return;
+    }
+
+    showLoader('El Agente Copywriter está generando 10 conceptos...');
+    hideStatus('briefingStatus');
+
+    try {
+        const res = await fetch('/api/generate-concepts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ briefing: b })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        state.briefing = b;
+        state.concepts = data.concepts.map(c => ({ ...c, selected: false, imageB64: null }));
+        saveState();
+
+        $('badgeBriefing').textContent = '✓';
+        $('badgeBriefing').classList.add('visible');
+        $('badgeConcepts').textContent = state.concepts.length;
+        $('badgeConcepts').classList.add('visible');
+
+        hideLoader();
+        renderConcepts();
+        switchView('concepts');
+    } catch (err) {
+        hideLoader();
+        showStatus('briefingStatus', `❌ ${err.message}`, 'error');
+    }
+}
+
+// ── Concepts rendering ────────────────────────────────────
+function renderConcepts() {
+    const grid = $('conceptsGrid');
+    grid.innerHTML = '';
+    state.concepts.forEach((c, i) => {
+        const card = document.createElement('div');
+        card.className = 'concept-card' + (c.selected ? ' selected' : '');
+        card.dataset.index = i;
+        card.innerHTML = `
+            <div class="concept-num">Concepto ${i + 1} — ${c.targetEmotion || ''}</div>
+            <div class="concept-angle">${c.angle}</div>
+            <div class="concept-headline">"${c.headline}"</div>
+            <div class="concept-body">${c.body}</div>
+            <div class="concept-cta">${c.cta}</div>
+            <div class="concept-pain">💔 ${c.painPoint}</div>
+            ${c.imageB64 ? `<div class="concept-creative"><img class="concept-img" src="data:image/png;base64,${c.imageB64}" /></div>` : ''}
+            <div class="concept-footer">
+                <div class="concept-check">${c.selected ? '✓' : ''}</div>
+                <button class="btn btn-secondary btn-sm btn-gen-creative" data-index="${i}">🎨 Generar imagen</button>
+            </div>
+        `;
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-gen-creative')) return;
+            toggleConceptSelection(i, card);
+        });
+        card.querySelector('.btn-gen-creative').addEventListener('click', () => openModal(i));
+        grid.appendChild(card);
+    });
+    updateConceptsToolbar();
+}
+
+function toggleConceptSelection(index, card) {
+    state.concepts[index].selected = !state.concepts[index].selected;
+    card.classList.toggle('selected', state.concepts[index].selected);
+    card.querySelector('.concept-check').textContent = state.concepts[index].selected ? '✓' : '';
+    saveState();
+    updateConceptsToolbar();
+}
+
+function toggleSelectAllConcepts() {
+    const allSelected = state.concepts.every(c => c.selected);
+    state.concepts.forEach(c => c.selected = !allSelected);
+    saveState();
+    renderConcepts();
+}
+
+function updateConceptsToolbar() {
+    const count = state.concepts.filter(c => c.selected).length;
+    $('conceptsSelectedCount').textContent = `${count} seleccionado${count !== 1 ? 's' : ''}`;
+    $('btnGoToCampaign').disabled = count === 0;
+}
+
+// ── Creative Modal ─────────────────────────────────────────
+let currentConceptIndex = null;
+function openModal(index) {
+    currentConceptIndex = index;
+    const c = state.concepts[index];
+    $('modalTitle').textContent = `Creativo: ${c.angle}`;
+    $('creativeModal').classList.remove('hidden');
+    $('modalResult').classList.add('hidden');
+    hideStatus('modalStatus');
+}
+function closeModal() { $('creativeModal').classList.add('hidden'); currentConceptIndex = null; }
+
+function setupFileUpload(areaId, inputId, previewId) {
+    const area = $(areaId);
+    const input = $(inputId);
+    const preview = $(previewId);
+    area.addEventListener('click', () => input.click());
+    area.addEventListener('dragover', e => { e.preventDefault(); area.style.borderColor = 'var(--accent)'; });
+    area.addEventListener('drop', e => {
+        e.preventDefault();
+        area.style.borderColor = '';
+        const file = e.dataTransfer.files[0];
+        if (file) readFileToPreview(file, preview);
+    });
+    input.addEventListener('change', () => {
+        if (input.files[0]) readFileToPreview(input.files[0], preview);
+    });
+}
+function readFileToPreview(file, previewEl) {
+    const reader = new FileReader();
+    reader.onload = e => { previewEl.src = e.target.result; previewEl.classList.remove('hidden'); };
+    reader.readAsDataURL(file);
+}
+
+async function generateCreative() {
+    if (currentConceptIndex === null) return;
+    const c = state.concepts[currentConceptIndex];
+    const activeTab = document.querySelector('.modal-tab.active')?.dataset.mode || 'generate';
+    const style = $('genStyle')?.value.trim() || '';
+
+    $('btnGenerateCreative').disabled = true;
+    $('btnGenerateCreative').innerHTML = '<span class="spinner-inline"></span>Generando...';
+    hideStatus('modalStatus');
+
+    try {
+        let body = { mode: activeTab, concept: c, style };
+
+        if (activeTab === 'edit') {
+            const src = $('photoPreview')?.src;
+            if (!src || src === window.location.href) throw new Error('Sube una foto de producto');
+            body.imageBase64 = src.split(',')[1];
+            body.mimeType = 'image/jpeg';
+        } else if (activeTab === 'manual') {
+            const src = $('manualPreview')?.src;
+            if (!src || src === window.location.href) throw new Error('Sube la imagen del anuncio');
+            body.imageBase64 = src.split(',')[1];
+            body.mimeType = 'image/jpeg';
+        }
+
+        const res = await fetch('/api/generate-creative', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        const b64 = data.b64;
+        state.concepts[currentConceptIndex].imageB64 = b64;
+        saveState();
+
+        $('generatedCreative').src = `data:image/png;base64,${b64}`;
+        $('btnDownloadCreative').href = `data:image/png;base64,${b64}`;
+        $('modalResult').classList.remove('hidden');
+        renderConcepts();
+    } catch (err) {
+        showStatus('modalStatus', `❌ ${err.message}`, 'error');
+    } finally {
+        $('btnGenerateCreative').disabled = false;
+        $('btnGenerateCreative').textContent = '🎨 Generar';
+    }
+}
+
+// ── Campaign ───────────────────────────────────────────────
+function updateBudgetHint() {
+    const budget = parseFloat($('dailyBudget').value) || 5;
+    const days = parseInt($('campaignDuration').value) || 7;
+    const selected = state.concepts.filter(c => c.selected).length || 1;
+    const total = budget * days * selected;
+    $('budgetHint').textContent = `$${budget}/día × ${days} días × ${selected} ad set${selected !== 1 ? 's' : ''} = $${total.toFixed(0)} total`;
+}
+
+function renderSelectedSummary() {
+    const selected = state.concepts.filter(c => c.selected);
+    $('selectedCount').textContent = selected.length;
+    const list = $('selectedConceptsList');
+    list.innerHTML = selected.map((c, i) => `
+        <div class="selected-item">
+            ${c.imageB64 ? `<img src="data:image/png;base64,${c.imageB64}" style="width:48px;height:48px;border-radius:6px;object-fit:cover" />` : '<span style="font-size:24px">💡</span>'}
+            <div>
+                <div style="font-weight:700;font-size:13px">${c.angle}</div>
+                <div style="font-size:11px;color:var(--text-dim)">${c.headline}</div>
+            </div>
+        </div>
+    `).join('');
+    updateBudgetHint();
+}
+
+async function launchCampaign() {
+    if (!state.metaConnected && !localStorage.getItem('meta_token')) {
+        showStatus('campaignStatus', '❌ Conecta tu cuenta de Meta primero (pestaña Configuración)', 'error');
+        return;
+    }
+    const selected = state.concepts.filter(c => c.selected);
+    if (selected.length === 0) {
+        showStatus('campaignStatus', '❌ Selecciona al menos un concepto', 'error');
+        return;
+    }
+
+    const payload = {
+        campaignName: $('campaignName').value.trim(),
+        objective: $('campaignObjective').value,
+        dailyBudgetUsd: parseFloat($('dailyBudget').value) || 5,
+        durationDays: parseInt($('campaignDuration').value) || 7,
+        destinationUrl: $('destinationUrl').value.trim(),
+        targeting: {
+            countries: $('targetCountries').value.split(',').map(s => s.trim().toUpperCase()),
+            ageMin: parseInt($('ageMin').value) || 18,
+            ageMax: parseInt($('ageMax').value) || 45,
+            gender: $('targetGender').value,
+            interests: $('targetInterests').value.split(',').map(s => s.trim())
+        },
+        concepts: selected
+    };
+
+    showLoader('Agente Media Buyer lanzando campaña en Meta...');
+    hideStatus('campaignStatus');
+
+    try {
+        const res = await fetch('/api/meta-create-campaign', {
+            method: 'POST',
+            headers: metaHeaders(),
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        const campaign = { id: data.campaignId, name: payload.campaignName, adSetIds: data.adSetIds, adIds: data.adIds, createdAt: new Date().toISOString() };
+        state.campaigns.push(campaign);
+        saveState();
+
+        $('badgeCampaign').textContent = '✓';
+        $('badgeCampaign').classList.add('visible');
+        $('badgeDashboard').classList.add('visible');
+
+        hideLoader();
+        showStatus('campaignStatus', `✅ Campaña lanzada — ID: ${data.campaignId}`, 'success');
+        setTimeout(() => { populateCampaignSelector(); switchView('dashboard'); }, 1500);
+    } catch (err) {
+        hideLoader();
+        showStatus('campaignStatus', `❌ ${err.message}`, 'error');
+    }
+}
+
+// ── Dashboard ──────────────────────────────────────────────
+function populateCampaignSelector() {
+    const sel = $('campaignSelector');
+    const currentVal = sel.value;
+    sel.innerHTML = '<option value="">Selecciona una campaña...</option>';
+    state.campaigns.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${new Date(c.createdAt).toLocaleDateString('es')})`;
+        sel.appendChild(opt);
+    });
+    if (currentVal) sel.value = currentVal;
+}
+
+async function refreshStats() {
+    const campaignId = $('campaignSelector').value;
+    if (!campaignId) return;
+
+    $('btnRefreshStats').innerHTML = '<span class="spinner-inline"></span>';
+    try {
+        const res = await fetch(`/api/meta-stats?campaignId=${campaignId}`, { headers: metaHeaders() });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        renderStats(data);
+    } catch (err) {
+        alert(`Error al obtener stats: ${err.message}`);
+    } finally {
+        $('btnRefreshStats').innerHTML = '↺ Actualizar';
+    }
+}
+
+function renderStats(data) {
+    const kpis = data.summary || {};
+    $('kpiSpend').textContent       = `$${(kpis.spend || 0).toFixed(2)}`;
+    $('kpiImpressions').textContent = (kpis.impressions || 0).toLocaleString();
+    $('kpiClicks').textContent      = (kpis.clicks || 0).toLocaleString();
+    $('kpiCtr').textContent         = `${(kpis.ctr || 0).toFixed(2)}%`;
+    $('kpiCpm').textContent         = `$${(kpis.cpm || 0).toFixed(2)}`;
+    $('kpiConversions').textContent = (kpis.conversions || 0).toLocaleString();
+
+    const tbody = $('adsTableBody');
+    tbody.innerHTML = '';
+    (data.ads || []).forEach(ad => {
+        const ctr = parseFloat(ad.ctr || 0);
+        const roas = parseFloat(ad.roas || 0);
+        let rowClass = 'row-hold', tag = 'tag-hold', label = 'Mantener';
+        if (ctr > 2 || roas > 1.5) { rowClass = 'row-scale'; tag = 'tag-scale'; label = '⬆ Escalar'; }
+        else if (ctr < 0.5 || (roas > 0 && roas < 0.8)) { rowClass = 'row-pause'; tag = 'tag-pause'; label = '⏸ Pausar'; }
+        const tr = document.createElement('tr');
+        tr.className = rowClass;
+        tr.innerHTML = `
+            <td>${ad.name || ad.id}</td>
+            <td>$${parseFloat(ad.spend || 0).toFixed(2)}</td>
+            <td>${parseInt(ad.impressions || 0).toLocaleString()}</td>
+            <td>${parseFloat(ad.ctr || 0).toFixed(2)}%</td>
+            <td>$${parseFloat(ad.cpm || 0).toFixed(2)}</td>
+            <td>${ad.conversions || 0}</td>
+            <td>${roas > 0 ? roas.toFixed(2) + 'x' : '—'}</td>
+            <td><span class="${tag}">${label}</span></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function analyzeWithAI() {
+    const campaignId = $('campaignSelector').value;
+    if (!campaignId) { alert('Selecciona una campaña primero'); return; }
+
+    showLoader('Agente Media Buyer analizando rendimiento...');
+    try {
+        const statsRes = await fetch(`/api/meta-stats?campaignId=${campaignId}`, { headers: metaHeaders() });
+        const statsData = await statsRes.json();
+        if (!statsRes.ok) throw new Error(statsData.error);
+
+        const res = await fetch('/api/meta-optimize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ campaignId, stats: statsData, briefing: state.briefing })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        state.pendingOptimizations = data;
+        renderOptimizations(data);
+        hideLoader();
+    } catch (err) {
+        hideLoader();
+        alert(`Error: ${err.message}`);
+    }
+}
+
+function renderOptimizations(data) {
+    const panel = $('optimizationPanel');
+    const content = $('optimizationContent');
+    panel.classList.remove('hidden');
+
+    let html = `<div class="opt-section"><h4>📊 Análisis General</h4><div class="opt-item">${data.insights || ''}</div></div>`;
+
+    if (data.pause?.length > 0) {
+        html += `<div class="opt-section"><h4>⏸ Pausar (bajo rendimiento)</h4>`;
+        data.pause.forEach(id => { html += `<div class="opt-item">Ad ID: ${id}</div>`; });
+        html += '</div>';
+    }
+    if (data.scale?.length > 0) {
+        html += `<div class="opt-section"><h4>⬆ Escalar (alto rendimiento)</h4>`;
+        data.scale.forEach(s => { html += `<div class="opt-item">Ad ID: ${s.adId} → Nuevo presupuesto: $${s.newBudget}/día</div>`; });
+        html += '</div>';
+    }
+    if (data.copyTweaks) {
+        html += `<div class="opt-section"><h4>✏️ Mejoras de Copy Sugeridas</h4><div class="opt-item">${data.copyTweaks}</div></div>`;
+    }
+
+    content.innerHTML = html;
+    if ((data.pause?.length || 0) + (data.scale?.length || 0) > 0) {
+        $('btnApplyOptimizations').classList.remove('hidden');
+    }
+}
+
+async function applyOptimizations() {
+    if (!state.pendingOptimizations) return;
+    if (!confirm('¿Aplicar las recomendaciones de la IA en Meta Ads?')) return;
+
+    showLoader('Aplicando optimizaciones en Meta...');
+    try {
+        const res = await fetch('/api/meta-optimize', {
+            method: 'PATCH',
+            headers: metaHeaders(),
+            body: JSON.stringify(state.pendingOptimizations)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        hideLoader();
+        state.pendingOptimizations = null;
+        $('btnApplyOptimizations').classList.add('hidden');
+        alert('✅ Optimizaciones aplicadas correctamente');
+        await refreshStats();
+    } catch (err) {
+        hideLoader();
+        alert(`Error: ${err.message}`);
+    }
+}
+
+// ── Boot ───────────────────────────────────────────────────
+init();
