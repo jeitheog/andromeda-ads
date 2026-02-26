@@ -4,16 +4,20 @@ export const config = { maxDuration: 120 };
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { mode, concept, style, imageBase64, mimeType = 'image/jpeg' } = req.body;
+    const { mode, concept, style, imageBase64, mimeType = 'image/jpeg', selectedProduct } = req.body;
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY no configurada' });
 
-    const basePrompt = `Professional fashion advertisement photo for Instagram/Facebook.
-Concept: "${concept.angle}" — ${concept.hook}
-Headline visible in image: "${concept.headline}"
+    const productContext = selectedProduct
+        ? `\nFeatured product: "${selectedProduct.title}" at $${selectedProduct.price}. ${(selectedProduct.description || '').substring(0, 200)}`
+        : '';
+
+    const basePrompt = `Professional fashion advertisement photo for Instagram/Facebook/TikTok.
+Concept angle: "${concept.angle}" — ${concept.hook}
+Headline visible in image: "${concept.headline}"${productContext}
 Style: ${style || 'modern, clean, high-fashion editorial'}
 Requirements: 1080x1080px square format, high-end fashion brand aesthetic, bold typography overlay, vibrant colors.
-The image must look like a real paid Meta ad for a clothing/fashion brand.`;
+The image must look like a real paid digital ad for a clothing/fashion brand.${selectedProduct ? ` Feature the product "${selectedProduct.title}" prominently in the composition.` : ''}`;
 
     try {
         let b64;

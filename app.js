@@ -3,8 +3,9 @@ const state = {
     metaConnected: false,
     briefing: null,
     concepts: [],        // [{angle,hook,headline,body,cta,painPoint,targetEmotion,imageB64,selected}]
-    campaigns: [],       // [{id, name, adSetIds, adIds}] saved in localStorage
-    pendingOptimizations: null
+    campaigns: [],       // [{id, name, adSetIds, adIds, platform}] saved in localStorage
+    pendingOptimizations: null,
+    selectedProduct: null // {id, title, price, description, image, tags, type}
 };
 
 const STORAGE_KEY = 'andromeda_state_v1';
@@ -133,6 +134,11 @@ function init() {
     const savedToken = localStorage.getItem('andromeda_shopify_token');
     if (savedShop)  $('shopifyShopUrl').value   = savedShop;
     if (savedToken) $('shopifyTokenInput').value = savedToken;
+
+    // Briefing — product picker
+    $('btnLoadProducts').addEventListener('click', loadShopifyProducts);
+    $('productPicker').addEventListener('change', onProductPickerChange);
+    $('btnClearProduct').addEventListener('click', clearSelectedProduct);
 
     // Briefing
     document.querySelectorAll('.tone-btn').forEach(btn => {
@@ -454,6 +460,79 @@ async function verifyTikTok() {
     }
 }
 
+// ── Product picker ──────────────────────────────────────────
+async function loadShopifyProducts() {
+    const shop  = localStorage.getItem('andromeda_shopify_shop');
+    const token = localStorage.getItem('andromeda_shopify_token');
+    if (!shop || !token) {
+        showStatus('productPickerStatus', '❌ Conecta tu tienda Shopify primero en la pestaña Configuración', 'error');
+        return;
+    }
+    $('btnLoadProducts').disabled = true;
+    $('btnLoadProducts').innerHTML = '<span class="spinner-inline"></span>Cargando...';
+    hideStatus('productPickerStatus');
+    try {
+        const res = await fetch('/api/shopify-products', {
+            method: 'POST',
+            headers: { 'x-shopify-shop': shop, 'x-shopify-token': token, 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        const sel = $('productPicker');
+        sel.innerHTML = '<option value="">— Campaña general (toda la marca) —</option>';
+        data.products.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = `${p.title} — $${p.price}`;
+            opt.dataset.product = JSON.stringify(p);
+            sel.appendChild(opt);
+        });
+        $('productPickerWrap').classList.remove('hidden');
+        showStatus('productPickerStatus', `✅ ${data.products.length} productos cargados`, 'success');
+    } catch (err) {
+        showStatus('productPickerStatus', `❌ ${err.message}`, 'error');
+    } finally {
+        $('btnLoadProducts').disabled = false;
+        $('btnLoadProducts').textContent = '🛍️ Cargar desde Shopify';
+    }
+}
+
+function onProductPickerChange() {
+    const sel = $('productPicker');
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt.value) { clearSelectedProduct(); return; }
+    const product = JSON.parse(opt.dataset.product || 'null');
+    if (!product) return;
+    selectProduct(product);
+}
+
+function selectProduct(product) {
+    state.selectedProduct = product;
+
+    // Show preview
+    const preview = $('selectedProductPreview');
+    const img = $('selectedProductImg');
+    if (product.image) { img.src = product.image; img.classList.remove('hidden'); }
+    else img.classList.add('hidden');
+    $('selectedProductName').textContent = product.title;
+    $('selectedProductPrice').textContent = `$${product.price}`;
+    $('selectedProductDesc').textContent = product.description?.substring(0, 150) || '';
+    preview.classList.remove('hidden');
+
+    // Auto-fill b1 with product-specific info
+    if ($('b1')) {
+        $('b1').value = `${product.title} — $${product.price}. ${product.description || ''}`.substring(0, 400).trim();
+    }
+}
+
+function clearSelectedProduct() {
+    state.selectedProduct = null;
+    $('selectedProductPreview').classList.add('hidden');
+    $('productPicker').value = '';
+    if ($('b1')) $('b1').value = '';
+}
+
 // ── Briefing → Concepts ────────────────────────────────────
 async function generateConcepts() {
     const b = {
@@ -475,7 +554,7 @@ async function generateConcepts() {
         const res = await fetch('/api/generate-concepts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ briefing: b })
+            body: JSON.stringify({ briefing: b, selectedProduct: state.selectedProduct || null })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
@@ -595,7 +674,7 @@ async function generateCreative() {
     hideStatus('modalStatus');
 
     try {
-        let body = { mode: activeTab, concept: c, style };
+        let body = { mode: activeTab, concept: c, style, selectedProduct: state.selectedProduct || null };
 
         if (activeTab === 'edit') {
             const src = $('photoPreview')?.src;

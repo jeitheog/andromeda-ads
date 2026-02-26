@@ -3,27 +3,39 @@ export const config = { maxDuration: 60 };
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { briefing } = req.body;
+    const { briefing, selectedProduct } = req.body;
     if (!briefing?.product) return res.status(400).json({ error: 'Falta el briefing' });
 
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY no configurada' });
 
-    const prompt = `Eres un experto copywriter de Meta Ads especializado en moda y ropa.
+    // Build product-specific section if a product was selected
+    const productSection = selectedProduct
+        ? `\nPRODUCTO ESPECÍFICO EN FOCO:
+- Nombre: ${selectedProduct.title}
+- Precio: $${selectedProduct.price}
+- Descripción: ${selectedProduct.description || 'Sin descripción'}
+- Tipo: ${selectedProduct.type || ''}
+- Tags: ${selectedProduct.tags || ''}
+
+IMPORTANTE: Los 10 conceptos deben girar EXCLUSIVAMENTE en torno a este producto concreto. El headline, hook y body deben mencionar o referirse directamente a "${selectedProduct.title}". NO hagas conceptos genéricos de marca.`
+        : '';
+
+    const prompt = `Eres un experto copywriter de publicidad digital especializado en moda y ropa.
 
 BRIEFING DE MARCA:
-- Producto: ${briefing.product}
+- Producto/marca: ${briefing.product}
 - Cliente ideal: ${briefing.audience}
 - Dolor principal del cliente: ${briefing.painPoint}
 - Diferenciador: ${briefing.differentiator}
 - Tono de marca: ${briefing.tone || 'moderno y cercano'}
-
-Genera exactamente 10 conceptos de anuncios diferentes para Meta Ads (Facebook/Instagram).
-El objetivo de TODOS los anuncios es llevar tráfico directo al sitio web para generar compras online. NO uses CTAs de WhatsApp ni mensajes — solo compra directa en la tienda.
+${productSection}
+Genera exactamente 10 conceptos de anuncios diferentes para publicidad digital (Meta Ads, Google Ads, TikTok).
+El objetivo de TODOS los anuncios es llevar tráfico directo al sitio web para generar compras online. Solo compra directa en la tienda.
 Cada concepto debe tener un ángulo de venta DISTINTO:
 Ángulos sugeridos: FOMO, Prueba social, Transformación, Problema-Solución, Deseo/Aspiración, Identidad, Oferta/Urgencia, Storytelling, Educativo, Curiosidad.
 
-El CTA siempre debe orientar a la compra: "Comprar ahora", "Ver colección", "Consíguelo ya", "Descúbrelo aquí", "Ir a la tienda", etc.
+El CTA siempre debe orientar a la compra: "Comprar ahora", "Ver producto", "Consíguelo ya", "Descúbrelo aquí", "Ir a la tienda", etc.
 
 Responde ÚNICAMENTE con un JSON válido (sin markdown, sin explicaciones):
 {

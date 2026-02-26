@@ -308,6 +308,35 @@
         <p class="view-sub">Responde 5 preguntas para que los agentes IA entiendan tu marca y generen anuncios efectivos</p>
       </div>
 
+      <!-- Product Focus picker -->
+      <div class="card glass product-focus-card">
+        <div class="product-focus-header">
+          <div>
+            <h3 class="card-title" style="margin-bottom:4px">🎯 Producto específico <span class="label-hint">(opcional)</span></h3>
+            <p class="product-focus-hint">Enfoca todos los conceptos y creativos en un solo producto. Si lo dejas vacío, cubrirá toda la marca.</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" id="btnLoadProducts">🛍️ Cargar desde Shopify</button>
+        </div>
+
+        <div id="productPickerWrap" class="hidden">
+          <select id="productPicker">
+            <option value="">— Campaña general (toda la marca) —</option>
+          </select>
+        </div>
+
+        <div id="selectedProductPreview" class="hidden product-preview-row">
+          <img id="selectedProductImg" class="product-preview-img" alt="" />
+          <div class="product-preview-info">
+            <strong id="selectedProductName"></strong>
+            <span id="selectedProductPrice" class="product-preview-price"></span>
+            <p id="selectedProductDesc" class="product-preview-desc"></p>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btnClearProduct" style="align-self:flex-start">✕</button>
+        </div>
+
+        <div id="productPickerStatus" class="status-msg hidden"></div>
+      </div>
+
       <div class="card glass briefing-card">
         <div class="briefing-form">
           <div class="form-group">
