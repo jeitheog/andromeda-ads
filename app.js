@@ -137,7 +137,8 @@ function init() {
 
     // Briefing — product picker
     $('btnLoadProducts').addEventListener('click', loadShopifyProducts);
-    $('productPicker').addEventListener('change', onProductPickerChange);
+    $('productSearchInput').addEventListener('input', () => renderProductList($('productSearchInput').value));
+    $('btnClearSearch').addEventListener('click', () => { $('productSearchInput').value = ''; renderProductList(''); $('productSearchInput').focus(); });
     $('btnClearProduct').addEventListener('click', clearSelectedProduct);
 
     // Briefing
@@ -461,6 +462,8 @@ async function verifyTikTok() {
 }
 
 // ── Product picker ──────────────────────────────────────────
+let _allProducts = [];
+
 async function loadShopifyProducts() {
     const shop  = localStorage.getItem('andromeda_shopify_shop');
     const token = localStorage.getItem('andromeda_shopify_token');
@@ -479,17 +482,12 @@ async function loadShopifyProducts() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error);
 
-        const sel = $('productPicker');
-        sel.innerHTML = '<option value="">— Campaña general (toda la marca) —</option>';
-        data.products.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.id;
-            opt.textContent = `${p.title} — $${p.price}`;
-            opt.dataset.product = JSON.stringify(p);
-            sel.appendChild(opt);
-        });
+        _allProducts = data.products;
         $('productPickerWrap').classList.remove('hidden');
-        showStatus('productPickerStatus', `✅ ${data.products.length} productos cargados`, 'success');
+        $('productSearchInput').value = '';
+        renderProductList('');
+        $('productSearchInput').focus();
+        showStatus('productPickerStatus', `✅ ${_allProducts.length} productos cargados — busca por nombre`, 'success');
     } catch (err) {
         showStatus('productPickerStatus', `❌ ${err.message}`, 'error');
     } finally {
@@ -498,39 +496,68 @@ async function loadShopifyProducts() {
     }
 }
 
-function onProductPickerChange() {
-    const sel = $('productPicker');
-    const opt = sel.options[sel.selectedIndex];
-    if (!opt.value) { clearSelectedProduct(); return; }
-    const product = JSON.parse(opt.dataset.product || 'null');
-    if (!product) return;
-    selectProduct(product);
+function renderProductList(query) {
+    const q = (query || '').toLowerCase().trim();
+    const filtered = q
+        ? _allProducts.filter(p => p.title.toLowerCase().includes(q) || (p.type || '').toLowerCase().includes(q) || (p.tags || '').toLowerCase().includes(q))
+        : _allProducts;
+
+    const list = $('productResultsList');
+    if (filtered.length === 0) {
+        list.innerHTML = `<div class="product-result-empty">Sin resultados para "${query}"</div>`;
+        return;
+    }
+    list.innerHTML = filtered.map(p => `
+        <div class="product-result-item" data-id="${p.id}">
+            ${p.image
+                ? `<img src="${p.image}" class="product-result-img" alt="" loading="lazy" />`
+                : `<div class="product-result-img product-result-no-img">📦</div>`}
+            <div class="product-result-info">
+                <span class="product-result-name">${p.title}</span>
+                <span class="product-result-price">$${p.price}</span>
+            </div>
+        </div>
+    `).join('');
+
+    list.querySelectorAll('.product-result-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const product = _allProducts.find(p => String(p.id) === item.dataset.id);
+            if (product) selectProduct(product);
+        });
+    });
 }
 
 function selectProduct(product) {
     state.selectedProduct = product;
 
-    // Show preview
-    const preview = $('selectedProductPreview');
+    // Hide search list, show preview
+    $('productPickerWrap').classList.add('hidden');
     const img = $('selectedProductImg');
     if (product.image) { img.src = product.image; img.classList.remove('hidden'); }
     else img.classList.add('hidden');
     $('selectedProductName').textContent = product.title;
     $('selectedProductPrice').textContent = `$${product.price}`;
     $('selectedProductDesc').textContent = product.description?.substring(0, 150) || '';
-    preview.classList.remove('hidden');
+    $('selectedProductPreview').classList.remove('hidden');
 
     // Auto-fill b1 with product-specific info
     if ($('b1')) {
         $('b1').value = `${product.title} — $${product.price}. ${product.description || ''}`.substring(0, 400).trim();
     }
+    hideStatus('productPickerStatus');
+    showStatus('productPickerStatus', `✅ Producto seleccionado: ${product.title}`, 'success');
 }
 
 function clearSelectedProduct() {
     state.selectedProduct = null;
     $('selectedProductPreview').classList.add('hidden');
-    $('productPicker').value = '';
     if ($('b1')) $('b1').value = '';
+    if (_allProducts.length > 0) {
+        $('productSearchInput').value = '';
+        renderProductList('');
+        $('productPickerWrap').classList.remove('hidden');
+    }
+    hideStatus('productPickerStatus');
 }
 
 // ── Briefing → Concepts ────────────────────────────────────

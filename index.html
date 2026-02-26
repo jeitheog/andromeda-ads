@@ -319,9 +319,12 @@
         </div>
 
         <div id="productPickerWrap" class="hidden">
-          <select id="productPicker">
-            <option value="">— Campaña general (toda la marca) —</option>
-          </select>
+          <div class="product-search-box">
+            <span class="product-search-icon">🔍</span>
+            <input type="text" id="productSearchInput" placeholder="Buscar producto por nombre..." autocomplete="off" />
+            <button class="btn btn-ghost btn-sm" id="btnClearSearch" title="Limpiar búsqueda">✕</button>
+          </div>
+          <div id="productResultsList" class="product-results-list"></div>
         </div>
 
         <div id="selectedProductPreview" class="hidden product-preview-row">
