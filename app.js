@@ -160,11 +160,10 @@ function restoreCredentials() {
     const token = localStorage.getItem('meta_token');
     const account = localStorage.getItem('meta_account');
     const page = localStorage.getItem('meta_page');
-    const wa = localStorage.getItem('meta_whatsapp');
+
     if (token) $('metaToken').value = token;
     if (account) $('metaAdAccount').value = account;
     if (page) $('metaPageId').value = page;
-    if (wa) $('whatsappNumber').value = wa;
     if (token && account) {
         state.metaConnected = true;
         showStatus('metaStatus', '✅ Credenciales guardadas', 'success');
@@ -267,8 +266,6 @@ async function verifyMeta() {
         localStorage.setItem('meta_token', token);
         localStorage.setItem('meta_account', account);
         if (page) localStorage.setItem('meta_page', page);
-        const wa = $('whatsappNumber').value.trim();
-        if (wa) localStorage.setItem('meta_whatsapp', wa);
 
         state.metaConnected = true;
         showStatus('metaStatus', `✅ Conectado: ${data.accountName} (${account})`, 'success');

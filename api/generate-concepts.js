@@ -19,8 +19,11 @@ BRIEFING DE MARCA:
 - Tono de marca: ${briefing.tone || 'moderno y cercano'}
 
 Genera exactamente 10 conceptos de anuncios diferentes para Meta Ads (Facebook/Instagram).
+El objetivo de TODOS los anuncios es llevar tráfico directo al sitio web para generar compras online. NO uses CTAs de WhatsApp ni mensajes — solo compra directa en la tienda.
 Cada concepto debe tener un ángulo de venta DISTINTO:
 Ángulos sugeridos: FOMO, Prueba social, Transformación, Problema-Solución, Deseo/Aspiración, Identidad, Oferta/Urgencia, Storytelling, Educativo, Curiosidad.
+
+El CTA siempre debe orientar a la compra: "Comprar ahora", "Ver colección", "Consíguelo ya", "Descúbrelo aquí", "Ir a la tienda", etc.
 
 Responde ÚNICAMENTE con un JSON válido (sin markdown, sin explicaciones):
 {
@@ -30,7 +33,7 @@ Responde ÚNICAMENTE con un JSON válido (sin markdown, sin explicaciones):
       "hook": "Frase de enganche inicial (máx 10 palabras)",
       "headline": "Titular principal del anuncio (máx 40 caracteres)",
       "body": "Cuerpo del anuncio (2-3 frases, máx 125 caracteres)",
-      "cta": "Texto del botón CTA (máx 5 palabras)",
+      "cta": "Texto del botón CTA orientado a compra (máx 5 palabras)",
       "painPoint": "Dolor específico que toca este concepto",
       "targetEmotion": "Emoción principal que activa"
     }

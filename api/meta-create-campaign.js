@@ -50,7 +50,7 @@ export default async function handler(req, res) {
                 name: `AdSet_${concept.angle.substring(0, 30)}`,
                 daily_budget: dailyBudgetCents,
                 billing_event: 'IMPRESSIONS',
-                optimization_goal: objective === 'OUTCOME_LEADS' ? 'LEAD_GENERATION' : 'LINK_CLICKS',
+                optimization_goal: objective === 'OUTCOME_SALES' ? 'OFFSITE_CONVERSIONS' : 'LINK_CLICKS',
                 bid_strategy: 'LOWEST_COST_WITHOUT_CAP',
                 targeting: {
                     geo_locations: { countries: (targeting.countries || ['ES']) },
@@ -80,8 +80,8 @@ export default async function handler(req, res) {
             // Ad Creative
             const linkData = {
                 message: `${concept.headline}\n\n${concept.body}`,
-                link: destinationUrl || 'https://wa.me/',
-                call_to_action: { type: 'LEARN_MORE', value: { link: destinationUrl || 'https://wa.me/' } }
+                link: destinationUrl,
+                call_to_action: { type: 'SHOP_NOW', value: { link: destinationUrl } }
             };
             if (imageHash) linkData.image_hash = imageHash;
 

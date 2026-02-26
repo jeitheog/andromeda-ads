@@ -32,8 +32,7 @@ export default async function handler(req, res) {
             const ins = ad.insights?.data?.[0] || {};
             const conversions = (ins.actions || []).find(a =>
                 a.action_type === 'offsite_conversion.fb_pixel_purchase' ||
-                a.action_type === 'onsite_conversion.messaging_conversation_started_7d' ||
-                a.action_type === 'lead'
+                a.action_type === 'purchase'
             )?.value || 0;
             const revenue = (ins.action_values || []).find(a =>
                 a.action_type === 'offsite_conversion.fb_pixel_purchase'
