@@ -66,6 +66,23 @@
         <p class="view-sub">Conecta tu cuenta publicitaria de Meta para empezar a automatizar</p>
       </div>
 
+      <!-- Shopify Brand Import Banner -->
+      <div class="shopify-import-card glass" id="shopifyImportCard">
+        <div class="shopify-import-left">
+          <span class="shopify-icon">🛍️</span>
+          <div>
+            <strong>Importar marca desde Shopify</strong>
+            <p>Conecta tu tienda y la IA leerá tus productos, colecciones y copy para rellenar el briefing automáticamente.</p>
+          </div>
+        </div>
+        <div class="shopify-import-right">
+          <input type="text"     id="shopifyShopUrl"   placeholder="tu-tienda.myshopify.com" />
+          <input type="password" id="shopifyTokenInput" placeholder="shpat_xxxxxxxx" />
+          <button class="btn btn-shopify" id="btnImportFromShopify">✨ Analizar tienda con IA</button>
+        </div>
+        <div id="shopifyImportStatus" class="status-msg hidden" style="grid-column:1/-1"></div>
+      </div>
+
       <div class="setup-grid">
         <!-- Credentials Card -->
         <div class="card glass">

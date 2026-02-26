@@ -92,6 +92,13 @@ function init() {
 
     // Setup
     $('btnVerifyMeta').addEventListener('click', verifyMeta);
+    $('btnImportFromShopify').addEventListener('click', importFromShopify);
+
+    // Restore saved Shopify inputs
+    const savedShop  = localStorage.getItem('andromeda_shopify_shop');
+    const savedToken = localStorage.getItem('andromeda_shopify_token');
+    if (savedShop)  $('shopifyShopUrl').value   = savedShop;
+    if (savedToken) $('shopifyTokenInput').value = savedToken;
 
     // Briefing
     document.querySelectorAll('.tone-btn').forEach(btn => {
@@ -170,6 +177,71 @@ function setCampaignName() {
     const now = new Date();
     const mon = now.toLocaleString('es', { month: 'short' }).toUpperCase();
     $('campaignName').value = `Andromeda_Moda_${mon}${now.getFullYear()}`;
+}
+
+// ── Setup / Shopify brand import ───────────────────────────
+async function importFromShopify() {
+    const shop  = $('shopifyShopUrl').value.trim();
+    const token = $('shopifyTokenInput').value.trim();
+    if (!shop || !token) {
+        showStatus('shopifyImportStatus', 'Introduce la URL de la tienda y el token de acceso', 'error');
+        return;
+    }
+
+    $('btnImportFromShopify').disabled = true;
+    $('btnImportFromShopify').innerHTML = '<span class="spinner-inline"></span>Analizando con IA...';
+    hideStatus('shopifyImportStatus');
+    showLoader('Analizando tu tienda de Shopify con IA...');
+
+    try {
+        const res = await fetch('/api/shopify-analyze', {
+            method: 'POST',
+            headers: {
+                'x-shopify-shop': shop,
+                'x-shopify-token': token,
+                'Content-Type': 'application/json'
+            }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        const p = data.brandProfile;
+
+        // Auto-fill briefing fields
+        if ($('b1')) $('b1').value = p.product        || '';
+        if ($('b2')) $('b2').value = p.audience       || '';
+        if ($('b3')) $('b3').value = p.painPoint      || '';
+        if ($('b4')) $('b4').value = p.differentiator || '';
+
+        // Select matching tone button
+        if (p.tone) {
+            document.querySelectorAll('.tone-btn').forEach(btn => {
+                if (btn.dataset.tone && p.tone.toLowerCase().includes(btn.dataset.tone.toLowerCase())) {
+                    btn.click();
+                }
+            });
+        }
+
+        // Persist credentials
+        localStorage.setItem('andromeda_shopify_shop',  shop);
+        localStorage.setItem('andromeda_shopify_token', token);
+
+        hideLoader();
+        showStatus('shopifyImportStatus',
+            `✅ Marca importada: ${data.storeName} (${data.productCount} productos analizados)`,
+            'success'
+        );
+
+        // Navigate to briefing after short delay
+        setTimeout(() => switchView('briefing'), 1500);
+
+    } catch (err) {
+        hideLoader();
+        showStatus('shopifyImportStatus', `❌ ${err.message}`, 'error');
+    } finally {
+        $('btnImportFromShopify').disabled = false;
+        $('btnImportFromShopify').innerHTML = '✨ Analizar tienda con IA';
+    }
 }
 
 // ── Setup / Meta validation ────────────────────────────────

@@ -324,6 +324,63 @@ td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
 }
 .loader-overlay p { color:var(--text-dim); font-size:14px; }
 
+/* ── Shopify Import Card ── */
+.shopify-import-card {
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:16px;
+  padding:20px 24px;
+  border-radius:var(--radius);
+  border:1px solid rgba(149,195,120,0.25);
+  background:rgba(149,195,120,0.04);
+  margin-bottom:24px;
+}
+.shopify-import-left {
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.shopify-icon { font-size:28px; flex-shrink:0; }
+.shopify-import-left strong { display:block; font-size:14px; font-weight:700; color:var(--text); margin-bottom:3px; }
+.shopify-import-left p { font-size:12px; color:var(--text-dim); line-height:1.4; }
+.shopify-import-right {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.shopify-import-right input {
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--glass-border);
+  border-radius:10px;
+  padding:9px 14px;
+  font-size:12px;
+  color:var(--text);
+  width:200px;
+  outline:none;
+  transition:var(--transition);
+}
+.shopify-import-right input:focus { border-color:rgba(149,195,120,0.5); }
+.btn-shopify {
+  background:linear-gradient(135deg,#4a7c59,#2d6a4f);
+  color:#fff;
+  border:none;
+  border-radius:10px;
+  padding:10px 18px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  transition:var(--transition);
+  white-space:nowrap;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.btn-shopify:hover:not(:disabled) { opacity:0.85; transform:translateY(-1px); }
+.btn-shopify:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
 @media (max-width: 1100px) {
   .kpi-grid { grid-template-columns:repeat(3,1fr); }
   .setup-grid, .campaign-grid { grid-template-columns:1fr; }
