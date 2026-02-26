@@ -25,11 +25,22 @@ function loadState() {
 // ── DOM helpers ────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const metaHeaders = () => {
-    const token = $('metaToken')?.value?.trim() || localStorage.getItem('meta_token') || '';
+    const token   = $('metaToken')?.value?.trim()   || localStorage.getItem('meta_token')   || '';
     const account = $('metaAdAccount')?.value?.trim() || localStorage.getItem('meta_account') || '';
-    const pageId = $('metaPageId')?.value?.trim() || localStorage.getItem('meta_page') || '';
+    const pageId  = $('metaPageId')?.value?.trim()  || localStorage.getItem('meta_page')    || '';
     return { 'x-meta-token': token, 'x-meta-account': account, 'x-meta-page': pageId, 'Content-Type': 'application/json' };
 };
+const googleHeaders = () => ({
+    'x-google-token':     localStorage.getItem('google_token')    || '',
+    'x-google-customer':  localStorage.getItem('google_customer') || '',
+    'x-google-dev-token': localStorage.getItem('google_dev_token')|| '',
+    'Content-Type': 'application/json'
+});
+const tiktokHeaders = () => ({
+    'x-tiktok-token':      localStorage.getItem('tiktok_token')      || '',
+    'x-tiktok-advertiser': localStorage.getItem('tiktok_advertiser') || '',
+    'Content-Type': 'application/json'
+});
 
 function showStatus(elId, msg, type = 'info') {
     const el = $(elId);
@@ -95,7 +106,27 @@ function init() {
     $('btnOpenMeta').addEventListener('click', e => { e.stopPropagation(); openMetaPanel(); });
     $('btnCloseMetaPanel').addEventListener('click', closeMetaPanel);
     $('btnVerifyMeta').addEventListener('click', verifyMeta);
+
+    $('platformGoogle').addEventListener('click', toggleGooglePanel);
+    $('btnOpenGoogle').addEventListener('click', e => { e.stopPropagation(); openGooglePanel(); });
+    $('btnCloseGooglePanel').addEventListener('click', closeGooglePanel);
+    $('btnVerifyGoogle').addEventListener('click', verifyGoogle);
+
+    $('platformTikTok').addEventListener('click', toggleTikTokPanel);
+    $('btnOpenTikTok').addEventListener('click', e => { e.stopPropagation(); openTikTokPanel(); });
+    $('btnCloseTikTokPanel').addEventListener('click', closeTikTokPanel);
+    $('btnVerifyTikTok').addEventListener('click', verifyTikTok);
+
     $('btnImportFromShopify').addEventListener('click', importFromShopify);
+
+    // Campaign platform tabs
+    document.querySelectorAll('.camp-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.camp-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            $('activePlatform').value = tab.dataset.platform;
+        });
+    });
 
     // Restore saved Shopify inputs
     const savedShop  = localStorage.getItem('andromeda_shopify_shop');
@@ -159,6 +190,7 @@ function init() {
     setCampaignName();
 }
 
+// ── Platform panel helpers ──────────────────────────────────
 function openMetaPanel() {
     $('metaFormPanel').classList.add('open');
     $('platformMeta').classList.add('active');
@@ -185,20 +217,68 @@ function setMetaBadge(connected) {
     }
 }
 
-function restoreCredentials() {
-    const token = localStorage.getItem('meta_token');
-    const account = localStorage.getItem('meta_account');
-    const page = localStorage.getItem('meta_page');
+// Google panel
+function openGooglePanel()   { $('googleFormPanel').classList.add('open'); $('platformGoogle').classList.add('active'); closeTikTokPanel(); closeMetaPanel(); }
+function closeGooglePanel()  { $('googleFormPanel').classList.remove('open'); $('platformGoogle').classList.remove('active'); }
+function toggleGooglePanel() { $('googleFormPanel').classList.contains('open') ? closeGooglePanel() : openGooglePanel(); }
 
-    if (token) $('metaToken').value = token;
-    if (account) $('metaAdAccount').value = account;
-    if (page) $('metaPageId').value = page;
-    if (token && account) {
+function setGoogleBadge(connected) {
+    const badge = $('googleBadge');
+    if (!badge) return;
+    badge.className = connected ? 'platform-status-badge connected' : 'platform-status-badge';
+    badge.innerHTML = `<span class="status-dot"></span><span class="status-text">${connected ? 'Conectado' : 'Sin conectar'}</span>`;
+    $('btnOpenGoogle').textContent = connected ? 'Editar →' : 'Configurar →';
+}
+
+// TikTok panel
+function openTikTokPanel()   { $('tiktokFormPanel').classList.add('open'); $('platformTikTok').classList.add('active'); closeGooglePanel(); closeMetaPanel(); }
+function closeTikTokPanel()  { $('tiktokFormPanel').classList.remove('open'); $('platformTikTok').classList.remove('active'); }
+function toggleTikTokPanel() { $('tiktokFormPanel').classList.contains('open') ? closeTikTokPanel() : openTikTokPanel(); }
+
+function setTikTokBadge(connected) {
+    const badge = $('tiktokBadge');
+    if (!badge) return;
+    badge.className = connected ? 'platform-status-badge connected' : 'platform-status-badge';
+    badge.innerHTML = `<span class="status-dot"></span><span class="status-text">${connected ? 'Conectado' : 'Sin conectar'}</span>`;
+    $('btnOpenTikTok').textContent = connected ? 'Editar →' : 'Configurar →';
+}
+
+function restoreCredentials() {
+    // Meta
+    const metaToken   = localStorage.getItem('meta_token');
+    const metaAccount = localStorage.getItem('meta_account');
+    const metaPage    = localStorage.getItem('meta_page');
+    if (metaToken)   $('metaToken').value      = metaToken;
+    if (metaAccount) $('metaAdAccount').value  = metaAccount;
+    if (metaPage)    $('metaPageId').value      = metaPage;
+    if (metaToken && metaAccount) {
         state.metaConnected = true;
         setMetaBadge(true);
         showStatus('metaStatus', '✅ Credenciales guardadas', 'success');
         $('badgeSetup').textContent = '✓';
         $('badgeSetup').classList.add('visible');
+    }
+
+    // Google
+    const gToken   = localStorage.getItem('google_token');
+    const gCustomer = localStorage.getItem('google_customer');
+    const gDevToken = localStorage.getItem('google_dev_token');
+    if (gToken)    $('googleAccessToken').value  = gToken;
+    if (gCustomer) $('googleCustomerId').value   = gCustomer;
+    if (gDevToken) $('googleDevToken').value     = gDevToken;
+    if (gToken && gCustomer) {
+        setGoogleBadge(true);
+        showStatus('googleStatus', '✅ Credenciales guardadas', 'success');
+    }
+
+    // TikTok
+    const ttToken    = localStorage.getItem('tiktok_token');
+    const ttAdv      = localStorage.getItem('tiktok_advertiser');
+    if (ttToken) $('tiktokAccessToken').value  = ttToken;
+    if (ttAdv)   $('tiktokAdvertiserId').value = ttAdv;
+    if (ttToken && ttAdv) {
+        setTikTokBadge(true);
+        showStatus('tiktokStatus', '✅ Credenciales guardadas', 'success');
     }
 }
 
@@ -309,6 +389,68 @@ async function verifyMeta() {
     } finally {
         $('btnVerifyMeta').disabled = false;
         $('btnVerifyMeta').textContent = '🔗 Verificar Conexión';
+    }
+}
+
+async function verifyGoogle() {
+    const customerId    = $('googleCustomerId').value.trim();
+    const developerToken = $('googleDevToken').value.trim();
+    const accessToken   = $('googleAccessToken').value.trim();
+    if (!customerId || !developerToken || !accessToken) {
+        showStatus('googleStatus', 'Introduce los 3 campos de Google Ads', 'error'); return;
+    }
+    $('btnVerifyGoogle').disabled = true;
+    $('btnVerifyGoogle').innerHTML = '<span class="spinner-inline"></span>Verificando...';
+    hideStatus('googleStatus');
+    try {
+        const res = await fetch('/api/google-validate', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerId, developerToken, accessToken })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        localStorage.setItem('google_token',    accessToken);
+        localStorage.setItem('google_customer', customerId.replace(/-/g, ''));
+        localStorage.setItem('google_dev_token', developerToken);
+        setGoogleBadge(true);
+        showStatus('googleStatus', `✅ Conectado: ${data.accountName}`, 'success');
+        $('badgeSetup').textContent = '✓'; $('badgeSetup').classList.add('visible');
+        setTimeout(closeGooglePanel, 1200);
+    } catch (err) {
+        showStatus('googleStatus', `❌ ${err.message}`, 'error');
+    } finally {
+        $('btnVerifyGoogle').disabled = false;
+        $('btnVerifyGoogle').textContent = '🔗 Verificar Conexión';
+    }
+}
+
+async function verifyTikTok() {
+    const accessToken  = $('tiktokAccessToken').value.trim();
+    const advertiserId = $('tiktokAdvertiserId').value.trim();
+    if (!accessToken || !advertiserId) {
+        showStatus('tiktokStatus', 'Introduce el Access Token y el Advertiser ID', 'error'); return;
+    }
+    $('btnVerifyTikTok').disabled = true;
+    $('btnVerifyTikTok').innerHTML = '<span class="spinner-inline"></span>Verificando...';
+    hideStatus('tiktokStatus');
+    try {
+        const res = await fetch('/api/tiktok-validate', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accessToken, advertiserId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        localStorage.setItem('tiktok_token',      accessToken);
+        localStorage.setItem('tiktok_advertiser', advertiserId);
+        setTikTokBadge(true);
+        showStatus('tiktokStatus', `✅ Conectado: ${data.accountName}`, 'success');
+        $('badgeSetup').textContent = '✓'; $('badgeSetup').classList.add('visible');
+        setTimeout(closeTikTokPanel, 1200);
+    } catch (err) {
+        showStatus('tiktokStatus', `❌ ${err.message}`, 'error');
+    } finally {
+        $('btnVerifyTikTok').disabled = false;
+        $('btnVerifyTikTok').textContent = '🔗 Verificar Conexión';
     }
 }
 
@@ -517,54 +659,62 @@ function renderSelectedSummary() {
 }
 
 async function launchCampaign() {
-    if (!state.metaConnected && !localStorage.getItem('meta_token')) {
-        showStatus('campaignStatus', '❌ Conecta tu cuenta de Meta primero (pestaña Configuración)', 'error');
-        return;
-    }
+    const platform = $('activePlatform').value || 'meta';
     const selected = state.concepts.filter(c => c.selected);
     if (selected.length === 0) {
-        showStatus('campaignStatus', '❌ Selecciona al menos un concepto', 'error');
-        return;
+        showStatus('campaignStatus', '❌ Selecciona al menos un concepto', 'error'); return;
+    }
+
+    // Check platform credentials
+    const platformNames = { meta: 'Meta', google: 'Google Ads', tiktok: 'TikTok Ads' };
+    const credChecks = {
+        meta:    () => localStorage.getItem('meta_token') && localStorage.getItem('meta_account'),
+        google:  () => localStorage.getItem('google_token') && localStorage.getItem('google_customer'),
+        tiktok:  () => localStorage.getItem('tiktok_token') && localStorage.getItem('tiktok_advertiser')
+    };
+    if (!credChecks[platform]?.()) {
+        showStatus('campaignStatus', `❌ Conecta tu cuenta de ${platformNames[platform]} primero (pestaña Configuración)`, 'error'); return;
     }
 
     const payload = {
-        campaignName: $('campaignName').value.trim(),
-        objective: $('campaignObjective').value,
+        campaignName:  $('campaignName').value.trim(),
+        objective:     $('campaignObjective').value,
         dailyBudgetUsd: parseFloat($('dailyBudget').value) || 5,
-        durationDays: parseInt($('campaignDuration').value) || 7,
+        durationDays:  parseInt($('campaignDuration').value) || 7,
         destinationUrl: $('destinationUrl').value.trim(),
         targeting: {
             countries: $('targetCountries').value.split(',').map(s => s.trim().toUpperCase()),
-            ageMin: parseInt($('ageMin').value) || 18,
-            ageMax: parseInt($('ageMax').value) || 45,
-            gender: $('targetGender').value,
+            ageMin:    parseInt($('ageMin').value) || 18,
+            ageMax:    parseInt($('ageMax').value) || 45,
+            gender:    $('targetGender').value,
             interests: $('targetInterests').value.split(',').map(s => s.trim())
         },
         concepts: selected
     };
 
-    showLoader('Agente Media Buyer lanzando campaña en Meta...');
+    const apiMap  = { meta: '/api/meta-create-campaign', google: '/api/google-create-campaign', tiktok: '/api/tiktok-create-campaign' };
+    const hdrMap  = { meta: metaHeaders(), google: googleHeaders(), tiktok: tiktokHeaders() };
+
+    showLoader(`Lanzando campaña en ${platformNames[platform]}...`);
     hideStatus('campaignStatus');
 
     try {
-        const res = await fetch('/api/meta-create-campaign', {
-            method: 'POST',
-            headers: metaHeaders(),
-            body: JSON.stringify(payload)
-        });
+        const res = await fetch(apiMap[platform], { method: 'POST', headers: hdrMap[platform], body: JSON.stringify(payload) });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
-        const campaign = { id: data.campaignId, name: payload.campaignName, adSetIds: data.adSetIds, adIds: data.adIds, createdAt: new Date().toISOString() };
+        const campaign = {
+            id: data.campaignId, name: payload.campaignName,
+            adSetIds: data.adSetIds, adIds: data.adIds,
+            platform, createdAt: new Date().toISOString()
+        };
         state.campaigns.push(campaign);
         saveState();
 
-        $('badgeCampaign').textContent = '✓';
-        $('badgeCampaign').classList.add('visible');
+        $('badgeCampaign').textContent = '✓'; $('badgeCampaign').classList.add('visible');
         $('badgeDashboard').classList.add('visible');
-
         hideLoader();
-        showStatus('campaignStatus', `✅ Campaña lanzada — ID: ${data.campaignId}`, 'success');
+        showStatus('campaignStatus', `✅ Campaña lanzada en ${platformNames[platform]} — ID: ${data.campaignId}`, 'success');
         setTimeout(() => { populateCampaignSelector(); switchView('dashboard'); }, 1500);
     } catch (err) {
         hideLoader();
@@ -573,6 +723,8 @@ async function launchCampaign() {
 }
 
 // ── Dashboard ──────────────────────────────────────────────
+const PLATFORM_ICONS = { meta: '📘', google: '🔵', tiktok: '🎵' };
+
 function populateCampaignSelector() {
     const sel = $('campaignSelector');
     const currentVal = sel.value;
@@ -580,7 +732,9 @@ function populateCampaignSelector() {
     state.campaigns.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
-        opt.textContent = `${c.name} (${new Date(c.createdAt).toLocaleDateString('es')})`;
+        opt.dataset.platform = c.platform || 'meta';
+        const icon = PLATFORM_ICONS[c.platform || 'meta'] || '📢';
+        opt.textContent = `${icon} ${c.name} (${new Date(c.createdAt).toLocaleDateString('es')})`;
         sel.appendChild(opt);
     });
     if (currentVal) sel.value = currentVal;
@@ -590,9 +744,19 @@ async function refreshStats() {
     const campaignId = $('campaignSelector').value;
     if (!campaignId) return;
 
+    const campaign = state.campaigns.find(c => c.id === campaignId);
+    const platform = campaign?.platform || 'meta';
+
+    const apiMap = {
+        meta:   [`/api/meta-stats?campaignId=${campaignId}`, metaHeaders()],
+        google: [`/api/google-stats?campaignId=${campaignId}`, googleHeaders()],
+        tiktok: [`/api/tiktok-stats?campaignId=${campaignId}`, tiktokHeaders()]
+    };
+    const [url, headers] = apiMap[platform] || apiMap.meta;
+
     $('btnRefreshStats').innerHTML = '<span class="spinner-inline"></span>';
     try {
-        const res = await fetch(`/api/meta-stats?campaignId=${campaignId}`, { headers: metaHeaders() });
+        const res = await fetch(url, { headers });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
         renderStats(data);

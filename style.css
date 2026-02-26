@@ -342,13 +342,12 @@ td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
   flex-direction:column;
   gap:12px;
 }
-.platform-card:hover:not(.platform-soon) {
+.platform-card:hover {
   border-color:rgba(168,85,247,0.4);
   background:rgba(168,85,247,0.05);
   transform:translateY(-2px);
   box-shadow:0 8px 32px rgba(168,85,247,0.15);
 }
-.platform-card.platform-soon { opacity:0.55; cursor:default; }
 .platform-card.active {
   border-color:rgba(168,85,247,0.6);
   background:rgba(168,85,247,0.08);
@@ -387,21 +386,11 @@ td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
   width:6px; height:6px; border-radius:50%;
   background:currentColor;
 }
-.platform-soon-badge {
-  font-size:10px; font-weight:700;
-  padding:3px 9px; border-radius:20px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.1);
-  color:var(--text-dim);
-  letter-spacing:0.3px;
-  flex-shrink:0;
-}
 .platform-desc {
   font-size:12px; color:var(--text-dim);
   line-height:1.5; flex:1;
 }
-.btn-platform-connect {
-  background:linear-gradient(135deg,#1877F2,#a855f7);
+.btn-platform-connect, .btn-platform-google, .btn-platform-tiktok {
   color:#fff; border:none;
   border-radius:10px;
   padding:9px 16px;
@@ -410,17 +399,23 @@ td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
   transition:var(--transition);
   align-self:flex-start;
 }
-.btn-platform-connect:hover { opacity:0.85; transform:translateY(-1px); }
-.btn-platform-soon {
-  background:rgba(255,255,255,0.04);
-  color:var(--text-dim);
-  border:1px solid var(--glass-border);
-  border-radius:10px;
-  padding:9px 16px;
-  font-size:12px; font-weight:600;
-  align-self:flex-start;
-  cursor:not-allowed;
+.btn-platform-connect { background:linear-gradient(135deg,#1877F2,#a855f7); }
+.btn-platform-google  { background:linear-gradient(135deg,#4285F4,#34A853); }
+.btn-platform-tiktok  { background:linear-gradient(135deg,#010101,#FE2C55); }
+.btn-platform-connect:hover, .btn-platform-google:hover, .btn-platform-tiktok:hover { opacity:0.85; transform:translateY(-1px); }
+
+/* ── Campaign platform tabs ── */
+.campaign-platform-tabs {
+  display:flex; gap:8px; margin-bottom:20px;
 }
+.camp-tab {
+  padding:9px 18px; border-radius:10px; border:1px solid var(--glass-border);
+  background:rgba(255,255,255,0.04); color:var(--text-dim);
+  font-size:13px; font-weight:600; cursor:pointer;
+  transition:var(--transition);
+}
+.camp-tab:hover { background:rgba(255,255,255,0.08); color:var(--text); }
+.camp-tab.active { background:rgba(168,85,247,0.15); border-color:rgba(168,85,247,0.4); color:var(--accent); }
 
 /* ── Meta form panel ── */
 .platform-form-panel {

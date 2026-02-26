@@ -93,7 +93,7 @@
         </div>
 
         <!-- Google Ads -->
-        <div class="platform-card platform-soon" id="platformGoogle" data-platform="google">
+        <div class="platform-card" id="platformGoogle" data-platform="google">
           <div class="platform-card-top">
             <div class="platform-logo google-logo">
               <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
@@ -106,14 +106,17 @@
               <span class="platform-name">Google Ads</span>
               <span class="platform-channels">Search · Shopping · YouTube</span>
             </div>
-            <div class="platform-soon-badge">Próximamente</div>
+            <div class="platform-status-badge" id="googleBadge">
+              <span class="status-dot"></span>
+              <span class="status-text">Sin conectar</span>
+            </div>
           </div>
-          <p class="platform-desc">Campañas de Shopping y búsqueda para capturar intención de compra activa en Google y YouTube.</p>
-          <button class="btn btn-platform-soon" disabled>En desarrollo</button>
+          <p class="platform-desc">Campañas de búsqueda y Shopping para capturar intención de compra activa en Google y YouTube.</p>
+          <button class="btn btn-platform-google" id="btnOpenGoogle">Configurar →</button>
         </div>
 
         <!-- TikTok -->
-        <div class="platform-card platform-soon" id="platformTikTok" data-platform="tiktok">
+        <div class="platform-card" id="platformTikTok" data-platform="tiktok">
           <div class="platform-card-top">
             <div class="platform-logo tiktok-logo">
               <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
@@ -124,10 +127,13 @@
               <span class="platform-name">TikTok Ads</span>
               <span class="platform-channels">In-Feed · TopView · Spark</span>
             </div>
-            <div class="platform-soon-badge">Próximamente</div>
+            <div class="platform-status-badge" id="tiktokBadge">
+              <span class="status-dot"></span>
+              <span class="status-text">Sin conectar</span>
+            </div>
           </div>
-          <p class="platform-desc">Anuncios de vídeo viral en TikTok para audiencias jóvenes con alto potencial de descubrimiento de producto.</p>
-          <button class="btn btn-platform-soon" disabled>En desarrollo</button>
+          <p class="platform-desc">Anuncios de imagen y vídeo en TikTok para audiencias jóvenes con alto potencial de descubrimiento.</p>
+          <button class="btn btn-platform-tiktok" id="btnOpenTikTok">Configurar →</button>
         </div>
 
       </div>
@@ -182,6 +188,94 @@
               <li>
                 <strong>Ad Account ID</strong>
                 <p><a href="https://business.facebook.com" target="_blank" rel="noopener">business.facebook.com</a> → Cuentas publicitarias → copia <code>act_XXXXX</code></p>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- Google credentials panel -->
+      <div class="platform-form-panel glass" id="googleFormPanel">
+        <div class="panel-header">
+          <div class="panel-title-row">
+            <span class="panel-platform-icon">🔵</span>
+            <h3>Conectar Google Ads</h3>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btnCloseGooglePanel">✕ Cerrar</button>
+        </div>
+        <div class="panel-body">
+          <div class="panel-form-col">
+            <div class="form-group">
+              <label>Customer ID</label>
+              <input type="text" id="googleCustomerId" placeholder="123-456-7890" />
+            </div>
+            <div class="form-group">
+              <label>Developer Token</label>
+              <input type="password" id="googleDevToken" placeholder="tu_developer_token" />
+            </div>
+            <div class="form-group">
+              <label>OAuth2 Access Token</label>
+              <input type="password" id="googleAccessToken" placeholder="ya29.xxxxxxxxx" />
+            </div>
+            <div id="googleStatus" class="status-msg hidden"></div>
+            <button class="btn btn-primary" id="btnVerifyGoogle">🔗 Verificar Conexión</button>
+          </div>
+          <div class="panel-guide-col">
+            <h4 class="card-title">📖 Cómo obtener las credenciales</h4>
+            <ol class="setup-steps">
+              <li>
+                <strong>Activa la Google Ads API</strong>
+                <p>Ve a <a href="https://developers.google.com/google-ads/api/docs/get-started/introduction" target="_blank" rel="noopener">Google Ads API</a> → solicita acceso → obtendrás un Developer Token en tu cuenta MCC</p>
+              </li>
+              <li>
+                <strong>Customer ID</strong>
+                <p>Tu cuenta de Google Ads → menú superior → número con formato <code>123-456-7890</code></p>
+              </li>
+              <li>
+                <strong>Access Token (OAuth2)</strong>
+                <p>Usa <a href="https://developers.google.com/oauthplayground" target="_blank" rel="noopener">OAuth Playground</a> → scope: <code>https://www.googleapis.com/auth/adwords</code> → genera token</p>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- TikTok credentials panel -->
+      <div class="platform-form-panel glass" id="tiktokFormPanel">
+        <div class="panel-header">
+          <div class="panel-title-row">
+            <span class="panel-platform-icon">🎵</span>
+            <h3>Conectar TikTok Ads</h3>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btnCloseTikTokPanel">✕ Cerrar</button>
+        </div>
+        <div class="panel-body">
+          <div class="panel-form-col">
+            <div class="form-group">
+              <label>Access Token</label>
+              <input type="password" id="tiktokAccessToken" placeholder="tu_access_token_tiktok" />
+            </div>
+            <div class="form-group">
+              <label>Advertiser ID</label>
+              <input type="text" id="tiktokAdvertiserId" placeholder="7000000000000000000" />
+            </div>
+            <div id="tiktokStatus" class="status-msg hidden"></div>
+            <button class="btn btn-primary" id="btnVerifyTikTok">🔗 Verificar Conexión</button>
+          </div>
+          <div class="panel-guide-col">
+            <h4 class="card-title">📖 Cómo obtener las credenciales</h4>
+            <ol class="setup-steps">
+              <li>
+                <strong>Crea una app en TikTok for Business</strong>
+                <p>Ve a <a href="https://ads.tiktok.com/marketing_api/apps/" target="_blank" rel="noopener">TikTok Marketing API</a> → Crear App → tipo: <em>Web</em></p>
+              </li>
+              <li>
+                <strong>Obtén el Access Token</strong>
+                <p>En tu app → Authorization → genera un token de larga duración con permisos de <code>Ads Management</code></p>
+              </li>
+              <li>
+                <strong>Advertiser ID</strong>
+                <p><a href="https://ads.tiktok.com" target="_blank" rel="noopener">ads.tiktok.com</a> → tu cuenta → el número de 19 dígitos en la URL</p>
               </li>
             </ol>
           </div>
@@ -324,6 +418,14 @@
         <h2>🚀 Configurar y Lanzar Campaña</h2>
         <p class="view-sub">Configura el presupuesto, la audiencia y lanza la campaña de microexperimentación</p>
       </div>
+
+      <!-- Platform selector -->
+      <div class="campaign-platform-tabs">
+        <button class="camp-tab active" data-platform="meta">📘 Meta (Facebook/Instagram)</button>
+        <button class="camp-tab" data-platform="google">🔵 Google Ads</button>
+        <button class="camp-tab" data-platform="tiktok">🎵 TikTok Ads</button>
+      </div>
+      <input type="hidden" id="activePlatform" value="meta" />
 
       <div class="campaign-grid">
         <!-- Campaign Settings -->
