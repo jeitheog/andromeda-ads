@@ -324,6 +324,128 @@ td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
 }
 .loader-overlay p { color:var(--text-dim); font-size:14px; }
 
+/* ── Platform Cards ── */
+.platform-cards {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+  margin-bottom:24px;
+}
+.platform-card {
+  background:var(--glass-bg);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:22px;
+  cursor:pointer;
+  transition:var(--transition);
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.platform-card:hover:not(.platform-soon) {
+  border-color:rgba(168,85,247,0.4);
+  background:rgba(168,85,247,0.05);
+  transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(168,85,247,0.15);
+}
+.platform-card.platform-soon { opacity:0.55; cursor:default; }
+.platform-card.active {
+  border-color:rgba(168,85,247,0.6);
+  background:rgba(168,85,247,0.08);
+  box-shadow:0 0 0 1px rgba(168,85,247,0.3);
+}
+.platform-card-top { display:flex; align-items:center; gap:12px; }
+.platform-logo {
+  width:44px; height:44px;
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.meta-logo { background:linear-gradient(135deg,#1877F2,#a855f7); }
+.google-logo { background:linear-gradient(135deg,#fff,#f1f3f4); }
+.tiktok-logo { background:#010101; border:1px solid #333; }
+.platform-info { flex:1; min-width:0; }
+.platform-name { display:block; font-size:15px; font-weight:700; color:var(--text); }
+.platform-channels { display:block; font-size:11px; color:var(--text-dim); margin-top:2px; }
+.platform-status-badge {
+  display:flex; align-items:center; gap:5px;
+  font-size:11px; font-weight:600;
+  padding:4px 10px;
+  border-radius:20px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--glass-border);
+  color:var(--text-dim);
+  white-space:nowrap;
+  flex-shrink:0;
+}
+.platform-status-badge.connected {
+  background:rgba(74,222,128,0.1);
+  border-color:rgba(74,222,128,0.35);
+  color:var(--green);
+}
+.status-dot {
+  width:6px; height:6px; border-radius:50%;
+  background:currentColor;
+}
+.platform-soon-badge {
+  font-size:10px; font-weight:700;
+  padding:3px 9px; border-radius:20px;
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,0.1);
+  color:var(--text-dim);
+  letter-spacing:0.3px;
+  flex-shrink:0;
+}
+.platform-desc {
+  font-size:12px; color:var(--text-dim);
+  line-height:1.5; flex:1;
+}
+.btn-platform-connect {
+  background:linear-gradient(135deg,#1877F2,#a855f7);
+  color:#fff; border:none;
+  border-radius:10px;
+  padding:9px 16px;
+  font-size:12px; font-weight:700;
+  cursor:pointer;
+  transition:var(--transition);
+  align-self:flex-start;
+}
+.btn-platform-connect:hover { opacity:0.85; transform:translateY(-1px); }
+.btn-platform-soon {
+  background:rgba(255,255,255,0.04);
+  color:var(--text-dim);
+  border:1px solid var(--glass-border);
+  border-radius:10px;
+  padding:9px 16px;
+  font-size:12px; font-weight:600;
+  align-self:flex-start;
+  cursor:not-allowed;
+}
+
+/* ── Meta form panel ── */
+.platform-form-panel {
+  border-radius:var(--radius);
+  padding:28px;
+  margin-bottom:24px;
+  display:none;
+}
+.platform-form-panel.open { display:block; }
+.panel-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:24px;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--glass-border);
+}
+.panel-title-row { display:flex; align-items:center; gap:10px; }
+.panel-title-row h3 { font-size:16px; font-weight:700; }
+.panel-platform-icon { font-size:20px; }
+.panel-body {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:32px;
+}
+.panel-form-col, .panel-guide-col { display:flex; flex-direction:column; gap:4px; }
+
 /* ── Shopify Import Card ── */
 .shopify-import-card {
   display:grid;
@@ -384,4 +506,6 @@ td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); }
 @media (max-width: 1100px) {
   .kpi-grid { grid-template-columns:repeat(3,1fr); }
   .setup-grid, .campaign-grid { grid-template-columns:1fr; }
+  .platform-cards { grid-template-columns:1fr; }
+  .panel-body { grid-template-columns:1fr; }
 }

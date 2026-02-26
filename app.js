@@ -90,7 +90,10 @@ function init() {
         });
     });
 
-    // Setup
+    // Setup — platform cards
+    $('platformMeta').addEventListener('click', toggleMetaPanel);
+    $('btnOpenMeta').addEventListener('click', e => { e.stopPropagation(); openMetaPanel(); });
+    $('btnCloseMetaPanel').addEventListener('click', closeMetaPanel);
     $('btnVerifyMeta').addEventListener('click', verifyMeta);
     $('btnImportFromShopify').addEventListener('click', importFromShopify);
 
@@ -156,6 +159,32 @@ function init() {
     setCampaignName();
 }
 
+function openMetaPanel() {
+    $('metaFormPanel').classList.add('open');
+    $('platformMeta').classList.add('active');
+}
+function closeMetaPanel() {
+    $('metaFormPanel').classList.remove('open');
+    $('platformMeta').classList.remove('active');
+}
+function toggleMetaPanel() {
+    $('metaFormPanel').classList.contains('open') ? closeMetaPanel() : openMetaPanel();
+}
+
+function setMetaBadge(connected) {
+    const badge = $('metaBadge');
+    if (!badge) return;
+    if (connected) {
+        badge.className = 'platform-status-badge connected';
+        badge.innerHTML = '<span class="status-dot"></span><span class="status-text">Conectado</span>';
+        $('btnOpenMeta').textContent = 'Editar →';
+    } else {
+        badge.className = 'platform-status-badge';
+        badge.innerHTML = '<span class="status-dot"></span><span class="status-text">Sin conectar</span>';
+        $('btnOpenMeta').textContent = 'Configurar →';
+    }
+}
+
 function restoreCredentials() {
     const token = localStorage.getItem('meta_token');
     const account = localStorage.getItem('meta_account');
@@ -166,6 +195,7 @@ function restoreCredentials() {
     if (page) $('metaPageId').value = page;
     if (token && account) {
         state.metaConnected = true;
+        setMetaBadge(true);
         showStatus('metaStatus', '✅ Credenciales guardadas', 'success');
         $('badgeSetup').textContent = '✓';
         $('badgeSetup').classList.add('visible');
@@ -268,10 +298,12 @@ async function verifyMeta() {
         if (page) localStorage.setItem('meta_page', page);
 
         state.metaConnected = true;
+        setMetaBadge(true);
         showStatus('metaStatus', `✅ Conectado: ${data.accountName} (${account})`, 'success');
         $('badgeSetup').textContent = '✓';
         $('badgeSetup').classList.add('visible');
         setAgentStatus('active', 'Meta conectado');
+        setTimeout(closeMetaPanel, 1200);
     } catch (err) {
         showStatus('metaStatus', `❌ ${err.message}`, 'error');
     } finally {

@@ -62,8 +62,130 @@
     <!-- ── VIEW: SETUP ── -->
     <section id="viewSetup" class="view active">
       <div class="view-header">
-        <h2>⚙️ Configuración de Meta Ads</h2>
-        <p class="view-sub">Conecta tu cuenta publicitaria de Meta para empezar a automatizar</p>
+        <h2>🔌 Plataformas de Publicidad</h2>
+        <p class="view-sub">Conecta tus cuentas publicitarias para activar la automatización con IA</p>
+      </div>
+
+      <!-- Platform connection cards -->
+      <div class="platform-cards">
+
+        <!-- Meta -->
+        <div class="platform-card" id="platformMeta" data-platform="meta">
+          <div class="platform-card-top">
+            <div class="platform-logo meta-logo">
+              <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+                <path d="M18 3C9.716 3 3 9.716 3 18s6.716 15 15 15 15-6.716 15-15S26.284 3 18 3Z" fill="url(#mg)"/>
+                <path d="M13.5 14.5c0-1.1.45-2 1.2-2 .66 0 1.05.38 1.8 1.7l3 5.5 3-5.5c.75-1.32 1.14-1.7 1.8-1.7.75 0 1.2.9 1.2 2V22h-2v-5.5L21 21h-1.5l-1.5-4.5V22h-2v-5.5L14.5 21H13v-6.5Z" fill="#fff"/>
+                <defs><linearGradient id="mg" x1="3" y1="3" x2="33" y2="33" gradientUnits="userSpaceOnUse"><stop stop-color="#1877F2"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+              </svg>
+            </div>
+            <div class="platform-info">
+              <span class="platform-name">Meta Ads</span>
+              <span class="platform-channels">Facebook · Instagram · Reels</span>
+            </div>
+            <div class="platform-status-badge" id="metaBadge">
+              <span class="status-dot"></span>
+              <span class="status-text">Sin conectar</span>
+            </div>
+          </div>
+          <p class="platform-desc">Crea y gestiona campañas de conversión en Facebook e Instagram con optimización automática por IA.</p>
+          <button class="btn btn-platform-connect" id="btnOpenMeta">Configurar →</button>
+        </div>
+
+        <!-- Google Ads -->
+        <div class="platform-card platform-soon" id="platformGoogle" data-platform="google">
+          <div class="platform-card-top">
+            <div class="platform-logo google-logo">
+              <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+                <text y="22" font-size="24" font-family="Arial" font-weight="bold">
+                  <tspan fill="#4285F4">G</tspan>
+                </text>
+              </svg>
+            </div>
+            <div class="platform-info">
+              <span class="platform-name">Google Ads</span>
+              <span class="platform-channels">Search · Shopping · YouTube</span>
+            </div>
+            <div class="platform-soon-badge">Próximamente</div>
+          </div>
+          <p class="platform-desc">Campañas de Shopping y búsqueda para capturar intención de compra activa en Google y YouTube.</p>
+          <button class="btn btn-platform-soon" disabled>En desarrollo</button>
+        </div>
+
+        <!-- TikTok -->
+        <div class="platform-card platform-soon" id="platformTikTok" data-platform="tiktok">
+          <div class="platform-card-top">
+            <div class="platform-logo tiktok-logo">
+              <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+                <text y="22" font-size="22" font-family="Arial" font-weight="bold" fill="#FE2C55">♪</text>
+              </svg>
+            </div>
+            <div class="platform-info">
+              <span class="platform-name">TikTok Ads</span>
+              <span class="platform-channels">In-Feed · TopView · Spark</span>
+            </div>
+            <div class="platform-soon-badge">Próximamente</div>
+          </div>
+          <p class="platform-desc">Anuncios de vídeo viral en TikTok para audiencias jóvenes con alto potencial de descubrimiento de producto.</p>
+          <button class="btn btn-platform-soon" disabled>En desarrollo</button>
+        </div>
+
+      </div>
+
+      <!-- Meta credentials panel (expandable) -->
+      <div class="platform-form-panel glass" id="metaFormPanel">
+        <div class="panel-header">
+          <div class="panel-title-row">
+            <span class="panel-platform-icon">📘</span>
+            <h3>Conectar Meta Ads</h3>
+          </div>
+          <button class="btn btn-ghost btn-sm" id="btnCloseMetaPanel">✕ Cerrar</button>
+        </div>
+
+        <div class="panel-body">
+          <div class="panel-form-col">
+            <div class="form-group">
+              <label>Access Token (token de larga duración)</label>
+              <input type="password" id="metaToken" placeholder="EAAxxxxxxxxx..." />
+            </div>
+            <div class="form-group">
+              <label>Ad Account ID</label>
+              <input type="text" id="metaAdAccount" placeholder="act_123456789" />
+            </div>
+            <div class="form-group">
+              <label>Facebook Page ID</label>
+              <input type="text" id="metaPageId" placeholder="123456789" />
+            </div>
+            <div id="metaStatus" class="status-msg hidden"></div>
+            <button class="btn btn-primary" id="btnVerifyMeta">🔗 Verificar Conexión</button>
+          </div>
+
+          <div class="panel-guide-col">
+            <h4 class="card-title">📖 Cómo obtener las credenciales</h4>
+            <ol class="setup-steps">
+              <li>
+                <strong>Crea una Meta App</strong>
+                <p>Ve a <a href="https://developers.facebook.com/apps/create" target="_blank" rel="noopener">developers.facebook.com</a> → Crear App → Tipo: <em>Business</em></p>
+              </li>
+              <li>
+                <strong>Añade Marketing API</strong>
+                <p>En tu app → Productos → Añadir Marketing API</p>
+              </li>
+              <li>
+                <strong>Obtén permisos</strong>
+                <p>Necesitas: <code>ads_management</code>, <code>ads_read</code>, <code>pages_read_engagement</code></p>
+              </li>
+              <li>
+                <strong>Genera tu Access Token</strong>
+                <p><a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noopener">Graph API Explorer</a> → selecciona tu app → genera token de 60 días</p>
+              </li>
+              <li>
+                <strong>Ad Account ID</strong>
+                <p><a href="https://business.facebook.com" target="_blank" rel="noopener">business.facebook.com</a> → Cuentas publicitarias → copia <code>act_XXXXX</code></p>
+              </li>
+            </ol>
+          </div>
+        </div>
       </div>
 
       <!-- Shopify Brand Import Banner -->
@@ -83,57 +205,6 @@
         <div id="shopifyImportStatus" class="status-msg hidden" style="grid-column:1/-1"></div>
       </div>
 
-      <div class="setup-grid">
-        <!-- Credentials Card -->
-        <div class="card glass">
-          <h3 class="card-title">🔑 Credenciales de Meta</h3>
-          <div class="form-group">
-            <label>Access Token (token de larga duración)</label>
-            <input type="password" id="metaToken" placeholder="EAAxxxxxxxxx..." />
-          </div>
-          <div class="form-group">
-            <label>Ad Account ID</label>
-            <input type="text" id="metaAdAccount" placeholder="act_123456789" />
-          </div>
-          <div class="form-group">
-            <label>Facebook Page ID</label>
-            <input type="text" id="metaPageId" placeholder="123456789" />
-          </div>
-          <div id="metaStatus" class="status-msg hidden"></div>
-          <button class="btn btn-primary" id="btnVerifyMeta">🔗 Verificar Conexión</button>
-        </div>
-
-        <!-- Setup Guide Card -->
-        <div class="card glass">
-          <h3 class="card-title">📖 Guía de Configuración</h3>
-          <ol class="setup-steps">
-            <li>
-              <strong>Crea una Meta App</strong>
-              <p>Ve a <a href="https://developers.facebook.com/apps/create" target="_blank" rel="noopener">developers.facebook.com</a> → Crear App → Tipo: <em>Business</em></p>
-            </li>
-            <li>
-              <strong>Añade Marketing API</strong>
-              <p>En tu app → Productos → Añadir Marketing API</p>
-            </li>
-            <li>
-              <strong>Obtén permisos</strong>
-              <p>Necesitas: <code>ads_management</code>, <code>ads_read</code>, <code>pages_read_engagement</code></p>
-            </li>
-            <li>
-              <strong>Genera tu Access Token</strong>
-              <p><a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noopener">Graph API Explorer</a> → selecciona tu app → genera token de 60 días</p>
-            </li>
-            <li>
-              <strong>Obtén tu Ad Account ID</strong>
-              <p><a href="https://business.facebook.com" target="_blank" rel="noopener">business.facebook.com</a> → Cuentas → Cuentas publicitarias → copia <code>act_XXXXX</code></p>
-            </li>
-            <li>
-              <strong>Obtén tu Page ID</strong>
-              <p>Tu página de Facebook → Acerca de → Transparencia de la página → ID de página</p>
-            </li>
-          </ol>
-        </div>
-      </div>
     </section>
 
     <!-- ── VIEW: BRIEFING ── -->
