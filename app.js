@@ -487,7 +487,7 @@ async function loadShopifyProducts() {
         $('productSearchInput').value = '';
         renderProductList('');
         $('productSearchInput').focus();
-        showStatus('productPickerStatus', `✅ ${_allProducts.length} productos cargados — busca por nombre`, 'success');
+        showStatus('productPickerStatus', `✅ ${data.total} productos cargados — busca y selecciona`, 'success');
     } catch (err) {
         showStatus('productPickerStatus', `❌ ${err.message}`, 'error');
     } finally {
@@ -527,25 +527,49 @@ function renderProductList(query) {
     });
 }
 
-function selectProduct(product) {
-    state.selectedProduct = product;
-
-    // Hide search list, show preview
+async function selectProduct(minimalProduct) {
+    // Hide search, show preview immediately with minimal data + loading state
     $('productPickerWrap').classList.add('hidden');
+
     const img = $('selectedProductImg');
-    if (product.image) { img.src = product.image; img.classList.remove('hidden'); }
+    if (minimalProduct.image) { img.src = minimalProduct.image; img.classList.remove('hidden'); }
     else img.classList.add('hidden');
-    $('selectedProductName').textContent = product.title;
-    $('selectedProductPrice').textContent = `$${product.price}`;
-    $('selectedProductDesc').textContent = product.description?.substring(0, 150) || '';
+
+    $('selectedProductName').textContent = minimalProduct.title;
+    $('selectedProductPrice').textContent = `$${minimalProduct.price}`;
+    $('selectedProductDesc').textContent = 'Cargando detalles...';
     $('selectedProductPreview').classList.remove('hidden');
 
-    // Auto-fill b1 with product-specific info
-    if ($('b1')) {
-        $('b1').value = `${product.title} — $${product.price}. ${product.description || ''}`.substring(0, 400).trim();
+    // Store minimal data immediately so concepts can use title+price while full data loads
+    state.selectedProduct = { ...minimalProduct };
+
+    // Lazy-load full product details
+    const shop  = localStorage.getItem('andromeda_shopify_shop');
+    const token = localStorage.getItem('andromeda_shopify_token');
+    if (shop && token) {
+        try {
+            const res = await fetch('/api/shopify-product', {
+                method: 'POST',
+                headers: { 'x-shopify-shop': shop, 'x-shopify-token': token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: minimalProduct.id })
+            });
+            const full = await res.json();
+            if (res.ok) {
+                state.selectedProduct = full;
+                $('selectedProductDesc').textContent = full.description?.substring(0, 150) || '';
+                if ($('b1')) {
+                    $('b1').value = `${full.title} — $${full.price}. ${full.description || ''}`.substring(0, 400).trim();
+                }
+            } else {
+                $('selectedProductDesc').textContent = '';
+            }
+        } catch {
+            $('selectedProductDesc').textContent = '';
+        }
     }
+
     hideStatus('productPickerStatus');
-    showStatus('productPickerStatus', `✅ Producto seleccionado: ${product.title}`, 'success');
+    showStatus('productPickerStatus', `✅ ${minimalProduct.title} seleccionado`, 'success');
 }
 
 function clearSelectedProduct() {
