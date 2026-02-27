@@ -5,8 +5,8 @@ export default async function handler(req, res) {
     if (req.method === 'PATCH') return applyOptimizations(req, res);
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurada' });
+    const apiKey = req.headers['x-anthropic-key'] || process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'Falta la clave de Claude (Anthropic). Añádela en Configuración → APIs de Inteligencia Artificial' });
 
     const { campaignId, stats, briefing } = req.body;
     if (!stats) return res.status(400).json({ error: 'Faltan stats' });

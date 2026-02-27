@@ -42,6 +42,11 @@ const tiktokHeaders = () => ({
     'x-tiktok-advertiser': localStorage.getItem('tiktok_advertiser') || '',
     'Content-Type': 'application/json'
 });
+const aiHeaders = () => ({
+    'x-anthropic-key': localStorage.getItem('anthropic_key') || '',
+    'x-openai-key': localStorage.getItem('openai_key') || '',
+    'Content-Type': 'application/json'
+});
 
 function showStatus(elId, msg, type = 'info') {
     const el = $(elId);
@@ -101,6 +106,9 @@ function init() {
             if (view === 'dashboard') populateCampaignSelector();
         });
     });
+
+    // AI Keys
+    $('btnSaveApiKeys').addEventListener('click', saveApiKeys);
 
     // Setup — platform cards
     $('platformMeta').addEventListener('click', toggleMetaPanel);
@@ -288,6 +296,40 @@ function restoreCredentials() {
         setTikTokBadge(true);
         showStatus('tiktokStatus', '✅ Credenciales guardadas', 'success');
     }
+
+    // AI Keys
+    const anthropicKey = localStorage.getItem('anthropic_key');
+    const openaiKey = localStorage.getItem('openai_key');
+    if (anthropicKey) $('anthropicKeyInput').value = anthropicKey;
+    if (openaiKey) $('openaiKeyInput').value = openaiKey;
+    updateAiKeyBadges();
+}
+
+function updateAiKeyBadges() {
+    const anthBadge = $('claudeKeyBadge');
+    const oaiBadge = $('openaiKeyBadge');
+    const hasAnth = !!(localStorage.getItem('anthropic_key'));
+    const hasOai = !!(localStorage.getItem('openai_key'));
+    if (anthBadge) {
+        anthBadge.textContent = hasAnth ? '✓ Configurada' : 'Sin clave';
+        anthBadge.classList.toggle('configured', hasAnth);
+    }
+    if (oaiBadge) {
+        oaiBadge.textContent = hasOai ? '✓ Configurada' : 'Sin clave';
+        oaiBadge.classList.toggle('configured', hasOai);
+    }
+}
+
+function saveApiKeys() {
+    const anthKey = $('anthropicKeyInput').value.trim();
+    const oaiKey = $('openaiKeyInput').value.trim();
+    if (anthKey) localStorage.setItem('anthropic_key', anthKey);
+    else localStorage.removeItem('anthropic_key');
+    if (oaiKey) localStorage.setItem('openai_key', oaiKey);
+    else localStorage.removeItem('openai_key');
+    updateAiKeyBadges();
+    showStatus('apiKeysStatus', '✅ Claves guardadas en el navegador', 'success');
+    setTimeout(() => hideStatus('apiKeysStatus'), 3000);
 }
 
 function setCampaignName() {
@@ -566,7 +608,7 @@ async function selectProduct(minimalProduct) {
                     try {
                         const ar = await fetch('/api/analyze-product', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: aiHeaders(),
                             body: JSON.stringify({ product: full })
                         });
                         const analysis = await ar.json();
@@ -636,7 +678,7 @@ async function generateConcepts() {
     try {
         const res = await fetch('/api/generate-concepts', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: aiHeaders(),
             body: JSON.stringify({ briefing: b, selectedProduct: state.selectedProduct || null })
         });
         const data = await res.json();
@@ -816,7 +858,7 @@ async function generateCreative() {
 
         const res = await fetch('/api/generate-creative', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: aiHeaders(),
             body: JSON.stringify(body)
         });
         const data = await res.json();
@@ -1142,7 +1184,7 @@ async function analyzeWithAI() {
 
         const res = await fetch('/api/meta-optimize', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { ...metaHeaders(), ...aiHeaders() },
             body: JSON.stringify({ campaignId, stats: statsData, briefing: state.briefing })
         });
         const data = await res.json();
@@ -1350,7 +1392,7 @@ async function sendChatMessage() {
     try {
         const res = await fetch('/api/claude-chat', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: aiHeaders(),
             body: JSON.stringify({ messages: chatHistory, context: chatContext() })
         });
         const data = await res.json();

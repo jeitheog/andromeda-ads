@@ -282,6 +282,51 @@
         </div>
       </div>
 
+      <!-- ── AI Provider API Keys ── -->
+      <div class="card glass ai-keys-card">
+        <h3 class="card-title">🤖 APIs de Inteligencia Artificial</h3>
+        <p class="view-sub" style="margin-bottom:16px">Pega tus claves para activar la IA. Se guardan en tu navegador y nunca se envían a terceros.</p>
+        <div class="ai-keys-grid">
+
+          <!-- Claude / Anthropic -->
+          <div class="ai-key-item">
+            <div class="ai-key-header">
+              <span class="ai-key-icon">✦</span>
+              <div class="ai-key-info">
+                <span class="ai-key-name">Claude · Anthropic</span>
+                <span class="ai-key-uses">Conceptos · Análisis · Chat · Optimización</span>
+              </div>
+              <span class="ai-key-badge" id="claudeKeyBadge">Sin clave</span>
+            </div>
+            <div class="ai-key-row">
+              <input type="password" id="anthropicKeyInput" placeholder="sk-ant-api03-..." autocomplete="off" />
+              <a href="https://console.anthropic.com/settings/keys" target="_blank" class="ai-key-link">Obtener →</a>
+            </div>
+          </div>
+
+          <!-- OpenAI -->
+          <div class="ai-key-item">
+            <div class="ai-key-header">
+              <span class="ai-key-icon">⚡</span>
+              <div class="ai-key-info">
+                <span class="ai-key-name">OpenAI</span>
+                <span class="ai-key-uses">Generación de imágenes (gpt-image-1)</span>
+              </div>
+              <span class="ai-key-badge" id="openaiKeyBadge">Sin clave</span>
+            </div>
+            <div class="ai-key-row">
+              <input type="password" id="openaiKeyInput" placeholder="sk-proj-..." autocomplete="off" />
+              <a href="https://platform.openai.com/api-keys" target="_blank" class="ai-key-link">Obtener →</a>
+            </div>
+          </div>
+
+        </div>
+        <div class="ai-keys-footer">
+          <button class="btn btn-primary" id="btnSaveApiKeys">💾 Guardar claves</button>
+          <div id="apiKeysStatus" class="status-msg hidden"></div>
+        </div>
+      </div>
+
       <!-- Shopify Brand Import Banner -->
       <div class="shopify-import-card glass" id="shopifyImportCard">
         <div class="shopify-import-left">

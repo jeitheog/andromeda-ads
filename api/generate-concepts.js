@@ -6,8 +6,8 @@ export default async function handler(req, res) {
     const { briefing, selectedProduct } = req.body;
     if (!briefing?.product) return res.status(400).json({ error: 'Falta el briefing' });
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurada' });
+    const apiKey = req.headers['x-anthropic-key'] || process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'Falta la clave de Claude (Anthropic). Añádela en Configuración → APIs de Inteligencia Artificial' });
 
     const productSection = selectedProduct
         ? `\nPRODUCTO ESPECÍFICO EN FOCO:

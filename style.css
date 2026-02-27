@@ -270,6 +270,23 @@ select { appearance:none; cursor:pointer; }
 .selected-list { display:flex; flex-direction:column; gap:8px; }
 .selected-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:rgba(168,85,247,0.06); border:1px solid rgba(168,85,247,0.2); font-size:13px; }
 
+/* ── AI Keys ── */
+.ai-keys-card { margin-bottom:20px; }
+.ai-keys-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+.ai-key-item { background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px; }
+.ai-key-header { display:flex; align-items:center; gap:10px; }
+.ai-key-icon { font-size:20px; width:32px; text-align:center; }
+.ai-key-info { flex:1; display:flex; flex-direction:column; gap:2px; }
+.ai-key-name { font-size:13px; font-weight:700; color:var(--text-light); }
+.ai-key-uses { font-size:11px; color:var(--text-dim); }
+.ai-key-badge { font-size:10px; font-weight:700; padding:3px 8px; border-radius:20px; background:rgba(239,68,68,0.15); color:#fca5a5; border:1px solid rgba(239,68,68,0.25); white-space:nowrap; }
+.ai-key-badge.configured { background:rgba(74,222,128,0.15); color:#86efac; border-color:rgba(74,222,128,0.25); }
+.ai-key-row { display:flex; align-items:center; gap:8px; }
+.ai-key-row input { flex:1; font-size:12px; }
+.ai-key-link { font-size:11px; color:#a855f7; text-decoration:none; white-space:nowrap; }
+.ai-key-link:hover { text-decoration:underline; }
+.ai-keys-footer { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+
 /* ── Dashboard ── */
 .dashboard-toolbar { display:flex; align-items:center; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
 .dashboard-toolbar select { width:auto; flex:1; max-width:320px; }

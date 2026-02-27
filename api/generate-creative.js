@@ -5,8 +5,8 @@ export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
     const { mode, concept, style, imageBase64, mimeType = 'image/jpeg', selectedProduct } = req.body;
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY no configurada' });
+    const apiKey = req.headers['x-openai-key'] || process.env.OPENAI_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'Falta la clave de OpenAI. Añádela en Configuración → APIs de Inteligencia Artificial' });
 
     // Build a very specific product anchor so the item stays IDENTICAL across concepts
     const productAnchor = selectedProduct

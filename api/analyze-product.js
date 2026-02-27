@@ -6,8 +6,8 @@ export default async function handler(req, res) {
     const { product } = req.body;
     if (!product?.title) return res.status(400).json({ error: 'Falta el producto' });
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurada' });
+    const apiKey = req.headers['x-anthropic-key'] || process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'Falta la clave de Claude (Anthropic). Añádela en Configuración → APIs de Inteligencia Artificial' });
 
     const systemPrompt = `Eres un experto en marketing de moda y publicidad digital. Respondes ÚNICAMENTE con JSON válido, sin markdown ni explicaciones.`;
 
