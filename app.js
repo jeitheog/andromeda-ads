@@ -926,6 +926,20 @@ async function launchCampaign() {
         showStatus('campaignStatus', `❌ Conecta tu cuenta de ${platformNames[platform]} primero (pestaña Configuración)`, 'error'); return;
     }
 
+    // For Meta: Page ID and destination URL are required to create ads (not just ad sets)
+    if (platform === 'meta') {
+        const pageId = $('metaPageId')?.value?.trim() || localStorage.getItem('meta_page') || '';
+        const destUrl = $('destinationUrl').value.trim();
+        if (!pageId) {
+            showStatus('campaignStatus', '❌ Falta el Facebook Page ID — sin él Meta no puede crear los anuncios. Ve a Configuración → Meta y añade tu Page ID.', 'error');
+            return;
+        }
+        if (!destUrl) {
+            showStatus('campaignStatus', '❌ Falta la URL de destino — añade la URL de tu tienda donde irán los anuncios.', 'error');
+            return;
+        }
+    }
+
     const payload = {
         campaignName: $('campaignName').value.trim(),
         objective: $('campaignObjective').value,
@@ -971,11 +985,21 @@ async function launchCampaign() {
         $('badgeDashboard').classList.add('visible');
         hideLoader();
 
-        // Show warnings from API (creative/ad failures)
-        const warnLines = data.warnings?.length
-            ? `\n⚠️ ${data.warnings.join('\n⚠️ ')}` : '';
-        const successMsg = `⏸️ Campaña creada en PAUSA — ${data.adSetIds.length} Ad Sets, ${data.adIds.length} Ads (ID: ${data.campaignId})${warnLines}`;
-        showStatus('campaignStatus', successMsg, data.warnings?.length ? 'warning' : 'success');
+        // Show result
+        const adsCreated = data.adIds?.length || 0;
+        const setsCreated = data.adSetIds?.length || 0;
+
+        if (data.warnings?.length) {
+            // Warnings mean some ads failed — show them prominently
+            const warnText = data.warnings.join(' | ');
+            showStatus('campaignStatus',
+                `⚠️ Campaña creada (${setsCreated} Ad Sets, ${adsCreated} Ads) pero con errores:\n${warnText}`,
+                'warning');
+        } else {
+            showStatus('campaignStatus',
+                `✅ Campaña creada en PAUSA — ${setsCreated} Ad Sets, ${adsCreated} Anuncios (ID: ${data.campaignId})`,
+                'success');
+        }
 
         // Auto-upload AI-generated images if platform is Meta and any concept has imageB64
         const hasImages = platform === 'meta' && selected.some(c => c.imageB64);
