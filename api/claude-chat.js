@@ -70,7 +70,7 @@ export default async function handler(req, res) {
         .map((c, i) => `  [${i}] ${c.selected ? '✓' : '○'} "${c.headline}" — ${c.angle}`)
         .join('\n');
 
-    const systemPrompt = `Eres el asistente inteligente de Andromeda Ads, una plataforma de automatización de Meta Ads para tiendas de moda.
+    const systemPrompt = `Eres Jarvi, el asistente inteligente de Andromeda Ads, una plataforma de automatización de Meta Ads para tiendas de moda. Tu nombre es Jarvi.
 
 ESTADO ACTUAL DE LA APLICACIÓN:
 ${ctx.briefing ? `Briefing: ${ctx.briefing.product} | Audiencia: ${ctx.briefing.audience}` : 'Briefing: no configurado'}

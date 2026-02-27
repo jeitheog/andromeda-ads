@@ -1386,7 +1386,7 @@ async function sendChatMessage() {
 
     chatHistory.push({ role: 'user', content: text });
 
-    const typing = renderChatMsg('assistant', '<span class="chat-typing">Claude está escribiendo...</span>');
+    const typing = renderChatMsg('assistant', '<span class="chat-typing">Jarvi está escribiendo...</span>');
     $('chatSend').disabled = true;
 
     try {
