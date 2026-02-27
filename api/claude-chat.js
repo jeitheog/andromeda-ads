@@ -53,6 +53,22 @@ const TOOLS = [
             },
             required: ['indices', 'action']
         }
+    },
+    {
+        name: 'create_strategy',
+        description: 'Crea y guarda una estrategia de copy completa en la biblioteca de estrategias del usuario. Úsala cuando el usuario pida crear, generar o sugerir una estrategia de copy o briefing para una marca, producto o campaña.',
+        input_schema: {
+            type: 'object',
+            properties: {
+                name:          { type: 'string', description: 'Nombre corto y descriptivo de la estrategia (ej: "FOMO Verano Mujeres 25-35")' },
+                product:       { type: 'string', description: 'Descripción del producto o marca: qué se vende, precio, características clave (2-3 frases)' },
+                audience:      { type: 'string', description: 'Perfil del cliente ideal: edad, género, estilo de vida, motivaciones (2-3 frases)' },
+                painPoint:     { type: 'string', description: 'El problema o deseo principal que resuelve el producto (1-2 frases con emoción)' },
+                differentiator:{ type: 'string', description: 'Por qué este producto y no otro: precio, calidad, diseño, exclusividad (1-2 frases)' },
+                tone:          { type: 'string', enum: ['elegante y sofisticada', 'casual y cercana', 'atrevida y provocadora', 'minimalista y clean', 'divertida y jovial', 'empoderada y feminista'], description: 'Tono de comunicación de la marca' }
+            },
+            required: ['name', 'product', 'audience', 'painPoint', 'differentiator', 'tone']
+        }
     }
 ];
 

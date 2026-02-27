@@ -1486,6 +1486,12 @@ function toolUseLabel(name, input) {
             desc: `Índices: ${input.indices.join(', ')}`
         };
     }
+    if (name === 'create_strategy') {
+        return {
+            title: `📁 Guardar estrategia "${input.name}"`,
+            desc: `Tono: ${input.tone}<br>${input.product?.substring(0, 80)}...`
+        };
+    }
     return { title: name, desc: JSON.stringify(input) };
 }
 
@@ -1519,6 +1525,32 @@ function applyToolUse(name, input) {
         saveState();
         renderConcepts();
         updateCampaignSummary();
+    }
+    if (name === 'create_strategy') {
+        const list = loadStrategies();
+        list.unshift({
+            id: Date.now(),
+            name: input.name,
+            briefing: {
+                product:        input.product,
+                audience:       input.audience,
+                painPoint:      input.painPoint,
+                differentiator: input.differentiator,
+                tone:           input.tone
+            },
+            createdAt: new Date().toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' })
+        });
+        persistStrategies(list);
+        renderStrategies();
+        // Also load it into the briefing form
+        $('b1').value = input.product || '';
+        $('b2').value = input.audience || '';
+        $('b3').value = input.painPoint || '';
+        $('b4').value = input.differentiator || '';
+        $('b5').value = input.tone || '';
+        document.querySelectorAll('.tone-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tone === input.tone);
+        });
     }
 }
 
