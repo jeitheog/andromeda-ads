@@ -45,9 +45,9 @@ const tiktokHeaders = () => ({
 const aiHeaders = () => {
     const h = { 'Content-Type': 'application/json' };
     const anth = localStorage.getItem('anthropic_key');
-    const oai  = localStorage.getItem('openai_key');
+    const oai = localStorage.getItem('openai_key');
     if (anth) h['x-anthropic-key'] = anth;
-    if (oai)  h['x-openai-key']    = oai;
+    if (oai) h['x-openai-key'] = oai;
     return h;
 };
 
@@ -1266,11 +1266,11 @@ function chatContext() {
         })),
         campaign: {
             dailyBudget: parseFloat($('dailyBudget')?.value) || 5,
-            duration:    parseInt($('campaignDuration')?.value) || 7,
-            countries:   $('targetCountries')?.value || 'ES',
-            ageMin:      parseInt($('ageMin')?.value) || 18,
-            ageMax:      parseInt($('ageMax')?.value) || 45,
-            gender:      $('targetGender')?.value || 'all'
+            duration: parseInt($('campaignDuration')?.value) || 7,
+            countries: $('targetCountries')?.value || 'ES',
+            ageMin: parseInt($('ageMin')?.value) || 18,
+            ageMax: parseInt($('ageMax')?.value) || 45,
+            gender: $('targetGender')?.value || 'all'
         }
     };
 }
@@ -1305,12 +1305,14 @@ function toolUseLabel(name, input) {
         if (input.countries) parts.push(`Países → ${input.countries.join(', ')}`);
         if (input.ageMin !== undefined || input.ageMax !== undefined)
             parts.push(`Edad → ${input.ageMin || '?'}-${input.ageMax || '?'}`);
-        if (input.gender) parts.push(`Género → ${ input.gender === '1' ? 'Hombres' : input.gender === '2' ? 'Mujeres' : 'Todos' }`);
+        if (input.gender) parts.push(`Género → ${input.gender === '1' ? 'Hombres' : input.gender === '2' ? 'Mujeres' : 'Todos'}`);
         return { title: 'Modificar targeting', desc: parts.join('<br>') };
     }
     if (name === 'select_concepts') {
-        return { title: `${input.action === 'select' ? 'Seleccionar' : 'Deseleccionar'} conceptos`,
-            desc: `Índices: ${input.indices.join(', ')}` };
+        return {
+            title: `${input.action === 'select' ? 'Seleccionar' : 'Deseleccionar'} conceptos`,
+            desc: `Índices: ${input.indices.join(', ')}`
+        };
     }
     return { title: name, desc: JSON.stringify(input) };
 }
@@ -1365,7 +1367,7 @@ function showPendingActions(toolUses) {
     panel.classList.remove('hidden');
 }
 
-window.applyActionCard = function(btn) {
+window.applyActionCard = function (btn) {
     const card = btn.closest('.chat-action-card');
     const name = card.dataset.tool;
     const input = JSON.parse(card.dataset.input);
@@ -1374,7 +1376,7 @@ window.applyActionCard = function(btn) {
     setTimeout(() => { card.remove(); checkActionsPanel(); }, 800);
 };
 
-window.checkActionsPanel = function() {
+window.checkActionsPanel = function () {
     const panel = $('chatPendingActions');
     if (!panel.querySelector('.chat-action-card')) panel.classList.add('hidden');
 };
@@ -1406,6 +1408,13 @@ async function sendChatMessage() {
         const replyText = data.text || '(sin respuesta)';
         renderChatMsg('assistant', replyText);
 
+        // Update Global AI Badge
+        const badge = document.getElementById('aiProviderBadge');
+        if (badge && data.provider) {
+            badge.textContent = `IA: ${data.provider.toUpperCase()} (${data.provider === 'openai' ? 'GPT-4o' : 'Claude 3.5'})`;
+            badge.className = `agent-provider-badge ${data.provider.toLowerCase()}`;
+        }
+
         // Add assistant reply to history (with full content for tool use continuity)
         chatHistory.push({
             role: 'assistant',
@@ -1430,15 +1439,50 @@ async function sendChatMessage() {
         }
     } catch (err) {
         typing.remove();
-        renderChatMsg('error', `❌ ${err.message}`);
+        const msg = err.message || '';
+        if (msg.includes('Falta la clave de Jarvi') || (msg.includes('clave') && msg.includes('Anthropic'))) {
+            showChatKeyForm();
+        } else {
+            renderChatMsg('error', `❌ ${msg}`);
+        }
     } finally {
         $('chatSend').disabled = false;
         input.focus();
     }
 }
 
+function showChatKeyForm() {
+    const msgs = $('chatMessages');
+    if (msgs.querySelector('.chat-key-form')) return;
+    const div = document.createElement('div');
+    div.className = 'chat-key-form';
+    div.innerHTML = `
+        <p>🔑 Necesito tu clave de Anthropic para funcionar:</p>
+        <input type="password" id="chatAnthropicInput" placeholder="sk-ant-api03-..." autocomplete="off" />
+        <button onclick="window.saveChatKey()">Guardar y continuar</button>
+    `;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    setTimeout(() => div.querySelector('input')?.focus(), 100);
+}
+
+window.saveChatKey = function () {
+    const val = document.getElementById('chatAnthropicInput')?.value?.trim();
+    if (!val) return;
+    localStorage.setItem('anthropic_key', val);
+    const form = document.querySelector('.chat-key-form');
+    if (form) form.remove();
+    renderChatMsg('assistant', '✅ ¡Clave guardada! Ya puedes chatear conmigo. ¿En qué te ayudo?');
+    updateAiKeyBadges();
+};
+
 function initChat() {
-    $('chatToggle').addEventListener('click', () => $('chatPanel').classList.toggle('hidden'));
+    $('chatToggle').addEventListener('click', () => {
+        $('chatPanel').classList.toggle('hidden');
+        if (!$('chatPanel').classList.contains('hidden') && !localStorage.getItem('anthropic_key')) {
+            showChatKeyForm();
+        }
+    });
     $('chatClose').addEventListener('click', () => $('chatPanel').classList.add('hidden'));
     $('chatSend').addEventListener('click', sendChatMessage);
     $('chatInput').addEventListener('keydown', e => {
