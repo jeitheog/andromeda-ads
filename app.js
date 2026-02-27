@@ -161,6 +161,11 @@ function init() {
         });
     });
     $('btnGenerateConcepts').addEventListener('click', generateConcepts);
+    $('btnSaveStrategy').addEventListener('click', openSaveStrategyModal);
+    $('btnConfirmSaveStrategy').addEventListener('click', confirmSaveStrategy);
+    $('btnCancelStrategy').addEventListener('click', () => $('saveStrategyModal').classList.add('hidden'));
+    $('saveStrategyModal').addEventListener('click', e => { if (e.target === $('saveStrategyModal')) $('saveStrategyModal').classList.add('hidden'); });
+    $('strategyNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') confirmSaveStrategy(); });
 
     // Concepts
     $('btnSelectAllConcepts').addEventListener('click', toggleSelectAllConcepts);
@@ -342,6 +347,113 @@ function saveApiKeys() {
     showStatus('apiKeysStatus', '✅ Claves guardadas en el navegador', 'success');
     setTimeout(() => hideStatus('apiKeysStatus'), 3000);
 }
+
+// ── Copy Strategies ─────────────────────────────────────────
+const STRATEGIES_KEY = 'andromeda_strategies';
+
+function readBriefingForm() {
+    return {
+        product:       $('b1').value.trim(),
+        audience:      $('b2').value.trim(),
+        painPoint:     $('b3').value.trim(),
+        differentiator:$('b4').value.trim(),
+        tone:          $('b5').value.trim()
+    };
+}
+
+function loadStrategies() {
+    try { return JSON.parse(localStorage.getItem(STRATEGIES_KEY) || '[]'); }
+    catch { return []; }
+}
+
+function persistStrategies(list) {
+    localStorage.setItem(STRATEGIES_KEY, JSON.stringify(list));
+}
+
+function openSaveStrategyModal() {
+    const b = readBriefingForm();
+    if (!b.product && !b.audience && !b.painPoint && !b.differentiator) {
+        showStatus('briefingStatus', '⚠️ Rellena al menos un campo del briefing antes de guardar', 'warning');
+        setTimeout(() => hideStatus('briefingStatus'), 3000);
+        return;
+    }
+    $('strategyNameInput').value = '';
+    $('saveStrategyModal').classList.remove('hidden');
+    setTimeout(() => $('strategyNameInput').focus(), 100);
+}
+
+function confirmSaveStrategy() {
+    const name = $('strategyNameInput').value.trim();
+    if (!name) { $('strategyNameInput').focus(); return; }
+    const b = readBriefingForm();
+    const list = loadStrategies();
+    list.unshift({
+        id: Date.now(),
+        name,
+        briefing: b,
+        createdAt: new Date().toLocaleDateString('es', { day: '2-digit', month: 'short', year: 'numeric' })
+    });
+    persistStrategies(list);
+    $('saveStrategyModal').classList.add('hidden');
+    renderStrategies();
+    showStatus('briefingStatus', `✅ Estrategia "${name}" guardada`, 'success');
+    setTimeout(() => hideStatus('briefingStatus'), 3000);
+}
+
+function renderStrategies() {
+    const list = loadStrategies();
+    const container = $('strategiesList');
+    const counter = $('strategiesCount');
+    counter.textContent = `${list.length} guardada${list.length !== 1 ? 's' : ''}`;
+
+    if (!list.length) {
+        container.innerHTML = `<p class="strategies-empty">Aún no hay estrategias guardadas. Rellena el briefing y pulsa <strong>Guardar estrategia</strong>.</p>`;
+        return;
+    }
+
+    const toneEmoji = { 'elegante y sofisticada': '✨', 'casual y cercana': '😊', 'atrevida y provocadora': '🔥', 'minimalista y clean': '🤍', 'divertida y jovial': '🎉', 'empoderada y feminista': '💪' };
+
+    container.innerHTML = list.map(s => `
+        <div class="strategy-card" data-id="${s.id}">
+            <div class="strategy-info">
+                <div class="strategy-name">${s.name}</div>
+                <div class="strategy-meta">
+                    ${s.briefing.tone ? `<span class="strategy-tone">${toneEmoji[s.briefing.tone] || ''} ${s.briefing.tone}</span>` : ''}
+                    <span class="strategy-date">${s.createdAt}</span>
+                </div>
+                ${s.briefing.product ? `<div class="strategy-preview">${s.briefing.product}</div>` : ''}
+            </div>
+            <div class="strategy-actions">
+                <button class="btn-load-strategy" onclick="window.loadStrategy(${s.id})">↩ Cargar</button>
+                <button class="btn-delete-strategy" onclick="window.deleteStrategy(${s.id})" title="Eliminar">🗑</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.loadStrategy = function(id) {
+    const list = loadStrategies();
+    const s = list.find(x => x.id === id);
+    if (!s) return;
+    const b = s.briefing;
+    $('b1').value = b.product || '';
+    $('b2').value = b.audience || '';
+    $('b3').value = b.painPoint || '';
+    $('b4').value = b.differentiator || '';
+    $('b5').value = b.tone || '';
+    document.querySelectorAll('.tone-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tone === b.tone);
+    });
+    showStatus('briefingStatus', `✅ Estrategia "${s.name}" cargada`, 'success');
+    setTimeout(() => hideStatus('briefingStatus'), 3000);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
+window.deleteStrategy = function(id) {
+    const list = loadStrategies().filter(x => x.id !== id);
+    persistStrategies(list);
+    renderStrategies();
+};
 
 function setCampaignName() {
     const now = new Date();
@@ -1541,3 +1653,4 @@ function initChat() {
 // ── Boot ───────────────────────────────────────────────────
 init();
 initChat();
+renderStrategies();

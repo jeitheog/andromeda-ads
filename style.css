@@ -508,6 +508,196 @@ button[disabled] {
   max-width: 780px;
 }
 
+.briefing-actions-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* ── Copy Strategies ── */
+.strategies-card {
+  max-width: 780px;
+  margin-top: 16px;
+}
+
+.strategies-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.strategies-count {
+  font-size: 11px;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.07);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.strategies-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.strategies-empty {
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 20px 0;
+  margin: 0;
+}
+
+.strategy-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 12px 14px;
+  transition: border-color 0.2s;
+}
+
+.strategy-card:hover {
+  border-color: rgba(168,85,247,0.35);
+}
+
+.strategy-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.strategy-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.strategy-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.strategy-tone {
+  font-size: 11px;
+  background: rgba(168,85,247,0.2);
+  color: #d8b4fe;
+  border-radius: 20px;
+  padding: 2px 8px;
+}
+
+.strategy-date {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.strategy-preview {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 5px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+
+.strategy-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-load-strategy {
+  background: rgba(168,85,247,0.2);
+  border: 1px solid rgba(168,85,247,0.4);
+  color: #d8b4fe;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-load-strategy:hover { background: rgba(168,85,247,0.35); }
+
+.btn-delete-strategy {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-dim);
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-delete-strategy:hover {
+  border-color: #f87171;
+  color: #f87171;
+}
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+
+.modal-overlay.hidden { display: none; }
+
+.modal-box {
+  background: #1a1a2e;
+  border: 1px solid rgba(168,85,247,0.4);
+  border-radius: 16px;
+  padding: 28px 32px;
+  width: 420px;
+  max-width: 92vw;
+}
+
+.modal-box h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.modal-box p {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin: 0 0 16px;
+}
+
+.modal-box input {
+  width: 100%;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: #fff;
+  padding: 10px 14px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .tone-grid {
   display: flex;
   flex-wrap: wrap;

@@ -460,7 +460,36 @@
             </div>
           </div>
           <div id="briefingStatus" class="status-msg hidden"></div>
-          <button class="btn btn-primary btn-lg" id="btnGenerateConcepts">✨ Generar 10 Conceptos con IA</button>
+
+          <div class="briefing-actions-row">
+            <button class="btn btn-primary btn-lg" id="btnGenerateConcepts">✨ Generar 10 Conceptos con IA</button>
+            <button class="btn btn-secondary" id="btnSaveStrategy" title="Guardar este briefing como estrategia reutilizable">📁 Guardar estrategia</button>
+          </div>
+        </div>
+
+        <!-- ── Copy Strategies Library ── -->
+        <div class="card glass strategies-card" id="strategiesCard">
+          <div class="strategies-header">
+            <h3 class="card-title" style="margin:0">📁 Mis Estrategias de Copy</h3>
+            <span class="strategies-count" id="strategiesCount">0 guardadas</span>
+          </div>
+          <p style="font-size:12px;color:var(--text-dim);margin:6px 0 14px">Guarda briefings completos y cárgalos en un clic para reutilizar estrategias ganadoras.</p>
+          <div id="strategiesList" class="strategies-list">
+            <p class="strategies-empty">Aún no hay estrategias guardadas. Rellena el briefing y pulsa <strong>Guardar estrategia</strong>.</p>
+          </div>
+        </div>
+
+        <!-- Save strategy modal -->
+        <div id="saveStrategyModal" class="modal-overlay hidden">
+          <div class="modal-box">
+            <h3>Guardar estrategia</h3>
+            <p>Dale un nombre para identificarla fácilmente:</p>
+            <input type="text" id="strategyNameInput" placeholder="Ej: Verano Moda Mujer, FOMO Bolsos, Black Friday..." maxlength="60" />
+            <div class="modal-actions">
+              <button class="btn btn-primary" id="btnConfirmSaveStrategy">Guardar</button>
+              <button class="btn btn-ghost" id="btnCancelStrategy">Cancelar</button>
+            </div>
+          </div>
         </div>
       </section>
 
