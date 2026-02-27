@@ -18,7 +18,7 @@ function loadState() {
         const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
         if (!s) return;
         if (s.briefing) state.briefing = s.briefing;
-        if (s.concepts)  state.concepts  = s.concepts;
+        if (s.concepts) state.concepts = s.concepts;
         if (s.campaigns) state.campaigns = s.campaigns;
     } catch (e) { console.warn('loadState error:', e); }
 }
@@ -26,19 +26,19 @@ function loadState() {
 // ── DOM helpers ────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const metaHeaders = () => {
-    const token   = $('metaToken')?.value?.trim()   || localStorage.getItem('meta_token')   || '';
+    const token = $('metaToken')?.value?.trim() || localStorage.getItem('meta_token') || '';
     const account = $('metaAdAccount')?.value?.trim() || localStorage.getItem('meta_account') || '';
-    const pageId  = $('metaPageId')?.value?.trim()  || localStorage.getItem('meta_page')    || '';
+    const pageId = $('metaPageId')?.value?.trim() || localStorage.getItem('meta_page') || '';
     return { 'x-meta-token': token, 'x-meta-account': account, 'x-meta-page': pageId, 'Content-Type': 'application/json' };
 };
 const googleHeaders = () => ({
-    'x-google-token':     localStorage.getItem('google_token')    || '',
-    'x-google-customer':  localStorage.getItem('google_customer') || '',
-    'x-google-dev-token': localStorage.getItem('google_dev_token')|| '',
+    'x-google-token': localStorage.getItem('google_token') || '',
+    'x-google-customer': localStorage.getItem('google_customer') || '',
+    'x-google-dev-token': localStorage.getItem('google_dev_token') || '',
     'Content-Type': 'application/json'
 });
 const tiktokHeaders = () => ({
-    'x-tiktok-token':      localStorage.getItem('tiktok_token')      || '',
+    'x-tiktok-token': localStorage.getItem('tiktok_token') || '',
     'x-tiktok-advertiser': localStorage.getItem('tiktok_advertiser') || '',
     'Content-Type': 'application/json'
 });
@@ -130,9 +130,9 @@ function init() {
     });
 
     // Restore saved Shopify inputs
-    const savedShop  = localStorage.getItem('andromeda_shopify_shop');
+    const savedShop = localStorage.getItem('andromeda_shopify_shop');
     const savedToken = localStorage.getItem('andromeda_shopify_token');
-    if (savedShop)  $('shopifyShopUrl').value   = savedShop;
+    if (savedShop) $('shopifyShopUrl').value = savedShop;
     if (savedToken) $('shopifyTokenInput').value = savedToken;
 
     // Briefing — product picker
@@ -165,8 +165,8 @@ function init() {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            ['modeGenerate','modeShopify','modeEdit','modeManual'].forEach(id => $(id)?.classList.add('hidden'));
-            const modeMap = { generate:'modeGenerate', shopify:'modeShopify', edit:'modeEdit', manual:'modeManual' };
+            ['modeGenerate', 'modeShopify', 'modeEdit', 'modeManual'].forEach(id => $(id)?.classList.add('hidden'));
+            const modeMap = { generate: 'modeGenerate', shopify: 'modeShopify', edit: 'modeEdit', manual: 'modeManual' };
             $(modeMap[tab.dataset.mode])?.classList.remove('hidden');
         });
     });
@@ -226,8 +226,8 @@ function setMetaBadge(connected) {
 }
 
 // Google panel
-function openGooglePanel()   { $('googleFormPanel').classList.add('open'); $('platformGoogle').classList.add('active'); closeTikTokPanel(); closeMetaPanel(); }
-function closeGooglePanel()  { $('googleFormPanel').classList.remove('open'); $('platformGoogle').classList.remove('active'); }
+function openGooglePanel() { $('googleFormPanel').classList.add('open'); $('platformGoogle').classList.add('active'); closeTikTokPanel(); closeMetaPanel(); }
+function closeGooglePanel() { $('googleFormPanel').classList.remove('open'); $('platformGoogle').classList.remove('active'); }
 function toggleGooglePanel() { $('googleFormPanel').classList.contains('open') ? closeGooglePanel() : openGooglePanel(); }
 
 function setGoogleBadge(connected) {
@@ -239,8 +239,8 @@ function setGoogleBadge(connected) {
 }
 
 // TikTok panel
-function openTikTokPanel()   { $('tiktokFormPanel').classList.add('open'); $('platformTikTok').classList.add('active'); closeGooglePanel(); closeMetaPanel(); }
-function closeTikTokPanel()  { $('tiktokFormPanel').classList.remove('open'); $('platformTikTok').classList.remove('active'); }
+function openTikTokPanel() { $('tiktokFormPanel').classList.add('open'); $('platformTikTok').classList.add('active'); closeGooglePanel(); closeMetaPanel(); }
+function closeTikTokPanel() { $('tiktokFormPanel').classList.remove('open'); $('platformTikTok').classList.remove('active'); }
 function toggleTikTokPanel() { $('tiktokFormPanel').classList.contains('open') ? closeTikTokPanel() : openTikTokPanel(); }
 
 function setTikTokBadge(connected) {
@@ -253,12 +253,12 @@ function setTikTokBadge(connected) {
 
 function restoreCredentials() {
     // Meta
-    const metaToken   = localStorage.getItem('meta_token');
+    const metaToken = localStorage.getItem('meta_token');
     const metaAccount = localStorage.getItem('meta_account');
-    const metaPage    = localStorage.getItem('meta_page');
-    if (metaToken)   $('metaToken').value      = metaToken;
-    if (metaAccount) $('metaAdAccount').value  = metaAccount;
-    if (metaPage)    $('metaPageId').value      = metaPage;
+    const metaPage = localStorage.getItem('meta_page');
+    if (metaToken) $('metaToken').value = metaToken;
+    if (metaAccount) $('metaAdAccount').value = metaAccount;
+    if (metaPage) $('metaPageId').value = metaPage;
     if (metaToken && metaAccount) {
         state.metaConnected = true;
         setMetaBadge(true);
@@ -268,22 +268,22 @@ function restoreCredentials() {
     }
 
     // Google
-    const gToken   = localStorage.getItem('google_token');
+    const gToken = localStorage.getItem('google_token');
     const gCustomer = localStorage.getItem('google_customer');
     const gDevToken = localStorage.getItem('google_dev_token');
-    if (gToken)    $('googleAccessToken').value  = gToken;
-    if (gCustomer) $('googleCustomerId').value   = gCustomer;
-    if (gDevToken) $('googleDevToken').value     = gDevToken;
+    if (gToken) $('googleAccessToken').value = gToken;
+    if (gCustomer) $('googleCustomerId').value = gCustomer;
+    if (gDevToken) $('googleDevToken').value = gDevToken;
     if (gToken && gCustomer) {
         setGoogleBadge(true);
         showStatus('googleStatus', '✅ Credenciales guardadas', 'success');
     }
 
     // TikTok
-    const ttToken    = localStorage.getItem('tiktok_token');
-    const ttAdv      = localStorage.getItem('tiktok_advertiser');
-    if (ttToken) $('tiktokAccessToken').value  = ttToken;
-    if (ttAdv)   $('tiktokAdvertiserId').value = ttAdv;
+    const ttToken = localStorage.getItem('tiktok_token');
+    const ttAdv = localStorage.getItem('tiktok_advertiser');
+    if (ttToken) $('tiktokAccessToken').value = ttToken;
+    if (ttAdv) $('tiktokAdvertiserId').value = ttAdv;
     if (ttToken && ttAdv) {
         setTikTokBadge(true);
         showStatus('tiktokStatus', '✅ Credenciales guardadas', 'success');
@@ -298,7 +298,7 @@ function setCampaignName() {
 
 // ── Setup / Shopify brand import ───────────────────────────
 async function importFromShopify() {
-    const shop  = $('shopifyShopUrl').value.trim();
+    const shop = $('shopifyShopUrl').value.trim();
     const token = $('shopifyTokenInput').value.trim();
     if (!shop || !token) {
         showStatus('shopifyImportStatus', 'Introduce la URL de la tienda y el token de acceso', 'error');
@@ -325,9 +325,9 @@ async function importFromShopify() {
         const p = data.brandProfile;
 
         // Auto-fill briefing fields
-        if ($('b1')) $('b1').value = p.product        || '';
-        if ($('b2')) $('b2').value = p.audience       || '';
-        if ($('b3')) $('b3').value = p.painPoint      || '';
+        if ($('b1')) $('b1').value = p.product || '';
+        if ($('b2')) $('b2').value = p.audience || '';
+        if ($('b3')) $('b3').value = p.painPoint || '';
         if ($('b4')) $('b4').value = p.differentiator || '';
 
         // Select matching tone button
@@ -340,7 +340,7 @@ async function importFromShopify() {
         }
 
         // Persist credentials
-        localStorage.setItem('andromeda_shopify_shop',  shop);
+        localStorage.setItem('andromeda_shopify_shop', shop);
         localStorage.setItem('andromeda_shopify_token', token);
 
         hideLoader();
@@ -401,9 +401,9 @@ async function verifyMeta() {
 }
 
 async function verifyGoogle() {
-    const customerId    = $('googleCustomerId').value.trim();
+    const customerId = $('googleCustomerId').value.trim();
     const developerToken = $('googleDevToken').value.trim();
-    const accessToken   = $('googleAccessToken').value.trim();
+    const accessToken = $('googleAccessToken').value.trim();
     if (!customerId || !developerToken || !accessToken) {
         showStatus('googleStatus', 'Introduce los 3 campos de Google Ads', 'error'); return;
     }
@@ -417,7 +417,7 @@ async function verifyGoogle() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-        localStorage.setItem('google_token',    accessToken);
+        localStorage.setItem('google_token', accessToken);
         localStorage.setItem('google_customer', customerId.replace(/-/g, ''));
         localStorage.setItem('google_dev_token', developerToken);
         setGoogleBadge(true);
@@ -433,7 +433,7 @@ async function verifyGoogle() {
 }
 
 async function verifyTikTok() {
-    const accessToken  = $('tiktokAccessToken').value.trim();
+    const accessToken = $('tiktokAccessToken').value.trim();
     const advertiserId = $('tiktokAdvertiserId').value.trim();
     if (!accessToken || !advertiserId) {
         showStatus('tiktokStatus', 'Introduce el Access Token y el Advertiser ID', 'error'); return;
@@ -448,7 +448,7 @@ async function verifyTikTok() {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-        localStorage.setItem('tiktok_token',      accessToken);
+        localStorage.setItem('tiktok_token', accessToken);
         localStorage.setItem('tiktok_advertiser', advertiserId);
         setTikTokBadge(true);
         showStatus('tiktokStatus', `✅ Conectado: ${data.accountName}`, 'success');
@@ -466,7 +466,7 @@ async function verifyTikTok() {
 let _allProducts = [];
 
 async function loadShopifyProducts() {
-    const shop  = localStorage.getItem('andromeda_shopify_shop');
+    const shop = localStorage.getItem('andromeda_shopify_shop');
     const token = localStorage.getItem('andromeda_shopify_token');
     if (!shop || !token) {
         showStatus('productPickerStatus', '❌ Conecta tu tienda Shopify primero en la pestaña Configuración', 'error');
@@ -511,8 +511,8 @@ function renderProductList(query) {
     list.innerHTML = filtered.map(p => `
         <div class="product-result-item" data-id="${p.id}">
             ${p.image
-                ? `<img src="${p.image}" class="product-result-img" alt="" loading="lazy" />`
-                : `<div class="product-result-img product-result-no-img">📦</div>`}
+            ? `<img src="${p.image}" class="product-result-img" alt="" loading="lazy" />`
+            : `<div class="product-result-img product-result-no-img">📦</div>`}
             <div class="product-result-info">
                 <span class="product-result-name">${p.title}</span>
                 <span class="product-result-price">$${p.price}</span>
@@ -545,7 +545,7 @@ async function selectProduct(minimalProduct) {
     state.selectedProduct = { ...minimalProduct };
 
     // Lazy-load full product details
-    const shop  = localStorage.getItem('andromeda_shopify_shop');
+    const shop = localStorage.getItem('andromeda_shopify_shop');
     const token = localStorage.getItem('andromeda_shopify_token');
     if (shop && token) {
         try {
@@ -571,9 +571,9 @@ async function selectProduct(minimalProduct) {
                         });
                         const analysis = await ar.json();
                         if (ar.ok) {
-                            $('b1').value = analysis.product        || '';
-                            $('b2').value = analysis.audience       || '';
-                            $('b3').value = analysis.painPoint      || '';
+                            $('b1').value = analysis.product || '';
+                            $('b2').value = analysis.audience || '';
+                            $('b3').value = analysis.painPoint || '';
                             $('b4').value = analysis.differentiator || '';
                             if (analysis.tone) {
                                 document.querySelectorAll('.tone-btn').forEach(btn => {
@@ -873,25 +873,25 @@ async function launchCampaign() {
     // Check platform credentials
     const platformNames = { meta: 'Meta', google: 'Google Ads', tiktok: 'TikTok Ads' };
     const credChecks = {
-        meta:    () => localStorage.getItem('meta_token') && localStorage.getItem('meta_account'),
-        google:  () => localStorage.getItem('google_token') && localStorage.getItem('google_customer'),
-        tiktok:  () => localStorage.getItem('tiktok_token') && localStorage.getItem('tiktok_advertiser')
+        meta: () => localStorage.getItem('meta_token') && localStorage.getItem('meta_account'),
+        google: () => localStorage.getItem('google_token') && localStorage.getItem('google_customer'),
+        tiktok: () => localStorage.getItem('tiktok_token') && localStorage.getItem('tiktok_advertiser')
     };
     if (!credChecks[platform]?.()) {
         showStatus('campaignStatus', `❌ Conecta tu cuenta de ${platformNames[platform]} primero (pestaña Configuración)`, 'error'); return;
     }
 
     const payload = {
-        campaignName:  $('campaignName').value.trim(),
-        objective:     $('campaignObjective').value,
+        campaignName: $('campaignName').value.trim(),
+        objective: $('campaignObjective').value,
         dailyBudgetUsd: parseFloat($('dailyBudget').value) || 5,
-        durationDays:  parseInt($('campaignDuration').value) || 7,
+        durationDays: parseInt($('campaignDuration').value) || 7,
         destinationUrl: $('destinationUrl').value.trim(),
         targeting: {
             countries: $('targetCountries').value.split(',').map(s => s.trim().toUpperCase()),
-            ageMin:    parseInt($('ageMin').value) || 18,
-            ageMax:    parseInt($('ageMax').value) || 45,
-            gender:    $('targetGender').value,
+            ageMin: parseInt($('ageMin').value) || 18,
+            ageMax: parseInt($('ageMax').value) || 45,
+            gender: $('targetGender').value,
             interests: $('targetInterests').value.split(',').map(s => s.trim())
         },
         // Strip imageB64 (too large), pass imageUrl instead so the backend uploads by URL
@@ -901,8 +901,8 @@ async function launchCampaign() {
         }))
     };
 
-    const apiMap  = { meta: '/api/meta-create-campaign', google: '/api/google-create-campaign', tiktok: '/api/tiktok-create-campaign' };
-    const hdrMap  = { meta: metaHeaders(), google: googleHeaders(), tiktok: tiktokHeaders() };
+    const apiMap = { meta: '/api/meta-create-campaign', google: '/api/google-create-campaign', tiktok: '/api/tiktok-create-campaign' };
+    const hdrMap = { meta: metaHeaders(), google: googleHeaders(), tiktok: tiktokHeaders() };
 
     showLoader(`Lanzando campaña en ${platformNames[platform]}...`);
     hideStatus('campaignStatus');
@@ -925,7 +925,9 @@ async function launchCampaign() {
         $('badgeCampaign').textContent = '✓'; $('badgeCampaign').classList.add('visible');
         $('badgeDashboard').classList.add('visible');
         hideLoader();
-        showStatus('campaignStatus', `✅ Campaña lanzada en ${platformNames[platform]} — ID: ${data.campaignId}`, 'success');
+
+        const successMsg = `✅ Campaña lanzada: ${payload.campaignName}\n(ID: ${data.campaignId}, ${data.adSetIds.length} Ad Sets, ${data.adIds.length} Ads)`;
+        showStatus('campaignStatus', successMsg, 'success');
 
         // Auto-upload AI-generated images if platform is Meta and concepts have imageB64
         const hasImages = platform === 'meta' && selected.some(c => c.imageB64);
@@ -1070,7 +1072,7 @@ async function refreshStats() {
     const platform = campaign?.platform || 'meta';
 
     const apiMap = {
-        meta:   [`/api/meta-stats?campaignId=${campaignId}`, metaHeaders()],
+        meta: [`/api/meta-stats?campaignId=${campaignId}`, metaHeaders()],
         google: [`/api/google-stats?campaignId=${campaignId}`, googleHeaders()],
         tiktok: [`/api/tiktok-stats?campaignId=${campaignId}`, tiktokHeaders()]
     };
@@ -1091,11 +1093,11 @@ async function refreshStats() {
 
 function renderStats(data) {
     const kpis = data.summary || {};
-    $('kpiSpend').textContent       = `$${(kpis.spend || 0).toFixed(2)}`;
+    $('kpiSpend').textContent = `$${(kpis.spend || 0).toFixed(2)}`;
     $('kpiImpressions').textContent = (kpis.impressions || 0).toLocaleString();
-    $('kpiClicks').textContent      = (kpis.clicks || 0).toLocaleString();
-    $('kpiCtr').textContent         = `${(kpis.ctr || 0).toFixed(2)}%`;
-    $('kpiCpm').textContent         = `$${(kpis.cpm || 0).toFixed(2)}`;
+    $('kpiClicks').textContent = (kpis.clicks || 0).toLocaleString();
+    $('kpiCtr').textContent = `${(kpis.ctr || 0).toFixed(2)}%`;
+    $('kpiCpm').textContent = `$${(kpis.cpm || 0).toFixed(2)}`;
     $('kpiConversions').textContent = (kpis.conversions || 0).toLocaleString();
 
     const tbody = $('adsTableBody');
