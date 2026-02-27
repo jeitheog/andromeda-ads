@@ -1384,11 +1384,6 @@ async function sendChatMessage() {
     const text = input.value.trim();
     if (!text) return;
 
-    if (!localStorage.getItem('anthropic_key')) {
-        renderChatMsg('error', '⚠️ Falta la clave de Jarvi. Ve a <strong>Configuración → APIs de Inteligencia Artificial</strong>, pega tu clave de Anthropic y guarda.');
-        return;
-    }
-
     input.value = '';
     renderChatMsg('user', text);
 
