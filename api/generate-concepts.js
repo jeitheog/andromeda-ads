@@ -6,10 +6,9 @@ export default async function handler(req, res) {
     const { briefing, selectedProduct } = req.body;
     if (!briefing?.product) return res.status(400).json({ error: 'Falta el briefing' });
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY no configurada' });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurada' });
 
-    // Build product-specific section if a product was selected
     const productSection = selectedProduct
         ? `\nPRODUCTO ESPECÍFICO EN FOCO:
 - Nombre: ${selectedProduct.title}
@@ -21,9 +20,9 @@ export default async function handler(req, res) {
 IMPORTANTE: Los 10 conceptos deben girar EXCLUSIVAMENTE en torno a este producto concreto. El headline, hook y body deben mencionar o referirse directamente a "${selectedProduct.title}". NO hagas conceptos genéricos de marca.`
         : '';
 
-    const prompt = `Eres un experto copywriter de publicidad digital especializado en moda y ropa.
+    const systemPrompt = `Eres un experto copywriter de publicidad digital especializado en moda y ropa. Respondes ÚNICAMENTE con JSON válido, sin markdown ni explicaciones.`;
 
-BRIEFING DE MARCA:
+    const userPrompt = `BRIEFING DE MARCA:
 - Producto/marca: ${briefing.product}
 - Cliente ideal: ${briefing.audience}
 - Dolor principal del cliente: ${briefing.painPoint}
@@ -37,7 +36,7 @@ Cada concepto debe tener un ángulo de venta DISTINTO:
 
 El CTA siempre debe orientar a la compra: "Comprar ahora", "Ver producto", "Consíguelo ya", "Descúbrelo aquí", "Ir a la tienda", etc.
 
-Responde ÚNICAMENTE con un JSON válido (sin markdown, sin explicaciones):
+Responde ÚNICAMENTE con este JSON exacto:
 {
   "concepts": [
     {
@@ -53,19 +52,25 @@ Responde ÚNICAMENTE con un JSON válido (sin markdown, sin explicaciones):
 }`;
 
     try {
-        const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        const r = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            headers: {
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+            },
             body: JSON.stringify({
-                model: 'gpt-4o',
+                model: 'claude-sonnet-4-6',
                 max_tokens: 2000,
-                response_format: { type: 'json_object' },
-                messages: [{ role: 'user', content: prompt }]
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userPrompt }]
             })
         });
         const d = await r.json();
-        if (!r.ok) throw new Error(d.error?.message || `OpenAI ${r.status}`);
-        const parsed = JSON.parse(d.choices[0].message.content);
+        if (!r.ok) throw new Error(d.error?.message || `Claude ${r.status}`);
+        const text = d.content[0].text.trim();
+        const jsonStr = text.startsWith('{') ? text : text.substring(text.indexOf('{'));
+        const parsed = JSON.parse(jsonStr);
         return res.json(parsed);
     } catch (err) {
         return res.status(500).json({ error: err.message });

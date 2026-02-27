@@ -6,10 +6,12 @@ export default async function handler(req, res) {
     const { product } = req.body;
     if (!product?.title) return res.status(400).json({ error: 'Falta el producto' });
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY no configurada' });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurada' });
 
-    const prompt = `Eres un experto en marketing de moda y publicidad digital. Analiza este producto de una tienda de moda y genera el briefing completo para una campaña publicitaria.
+    const systemPrompt = `Eres un experto en marketing de moda y publicidad digital. Respondes ÚNICAMENTE con JSON válido, sin markdown ni explicaciones.`;
+
+    const userPrompt = `Analiza este producto de una tienda de moda y genera el briefing completo para una campaña publicitaria.
 
 PRODUCTO:
 - Nombre: ${product.title}
@@ -18,7 +20,7 @@ PRODUCTO:
 - Tipo de producto: ${product.type || 'Moda/Ropa'}
 - Tags: ${product.tags || 'Sin tags'}
 
-Responde ÚNICAMENTE con un JSON válido con este formato exacto:
+Responde ÚNICAMENTE con este JSON exacto:
 {
   "product": "Descripción de venta del producto: qué es, precio, materiales o características clave que lo hacen deseable (2-3 frases directas y atractivas)",
   "audience": "Perfil del cliente ideal para este producto específico: edad estimada, género, estilo de vida, ocasiones de uso (2-3 frases concretas)",
@@ -31,19 +33,25 @@ Para "tone" elige EXACTAMENTE uno de estos valores:
 elegante y sofisticada | casual y cercana | atrevida y provocadora | minimalista y clean | divertida y jovial | empoderada y feminista`;
 
     try {
-        const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        const r = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            headers: {
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+            },
             body: JSON.stringify({
-                model: 'gpt-4o',
+                model: 'claude-sonnet-4-6',
                 max_tokens: 600,
-                response_format: { type: 'json_object' },
-                messages: [{ role: 'user', content: prompt }]
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userPrompt }]
             })
         });
         const d = await r.json();
-        if (!r.ok) throw new Error(d.error?.message || `OpenAI ${r.status}`);
-        return res.json(JSON.parse(d.choices[0].message.content));
+        if (!r.ok) throw new Error(d.error?.message || `Claude ${r.status}`);
+        const text = d.content[0].text.trim();
+        const jsonStr = text.startsWith('{') ? text : text.substring(text.indexOf('{'));
+        return res.json(JSON.parse(jsonStr));
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }

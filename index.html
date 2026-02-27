@@ -628,6 +628,35 @@
   </main>
 </div>
 
+<!-- ── Claude Chat Panel ── -->
+<button id="chatToggle" class="chat-toggle-btn" title="Asistente Claude">
+  <span class="chat-toggle-icon">✦</span>
+</button>
+
+<div id="chatPanel" class="chat-panel hidden">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <span class="chat-header-title">✦ Asistente Claude</span>
+      <span class="chat-header-sub">Habla y modifica tu campaña</span>
+    </div>
+    <button id="chatClose" class="chat-close-btn">✕</button>
+  </div>
+
+  <div id="chatMessages" class="chat-messages">
+    <div class="chat-msg assistant">
+      Hola! Soy Claude. Puedo ayudarte a modificar conceptos, cambiar el targeting, ajustar el presupuesto o cualquier cosa de tu campaña. ¿Qué quieres cambiar?
+    </div>
+  </div>
+
+  <div id="chatPendingActions" class="chat-pending-actions hidden"></div>
+
+  <div class="chat-input-area">
+    <textarea id="chatInput" class="chat-input" rows="2"
+      placeholder="Ej: cambia el headline del concepto 2, sube el presupuesto a $20, selecciona los primeros 3..."></textarea>
+    <button id="chatSend" class="btn btn-primary btn-sm chat-send-btn">Enviar</button>
+  </div>
+</div>
+
 <script type="module" src="app.js"></script>
 </body>
 </html>

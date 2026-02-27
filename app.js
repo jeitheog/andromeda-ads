@@ -1208,5 +1208,199 @@ async function applyOptimizations() {
     }
 }
 
+// ── Claude Chat ────────────────────────────────────────────
+
+const chatHistory = []; // [{role, content}] — persists during session
+
+function chatContext() {
+    return {
+        briefing: state.briefing,
+        concepts: (state.concepts || []).map(c => ({
+            angle: c.angle, headline: c.headline, body: c.body,
+            hook: c.hook, cta: c.cta, selected: c.selected
+        })),
+        campaign: {
+            dailyBudget: parseFloat($('dailyBudget')?.value) || 5,
+            duration:    parseInt($('campaignDuration')?.value) || 7,
+            countries:   $('targetCountries')?.value || 'ES',
+            ageMin:      parseInt($('ageMin')?.value) || 18,
+            ageMax:      parseInt($('ageMax')?.value) || 45,
+            gender:      $('targetGender')?.value || 'all'
+        }
+    };
+}
+
+function renderChatMsg(role, text) {
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role}`;
+    div.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    $('chatMessages').appendChild(div);
+    $('chatMessages').scrollTop = $('chatMessages').scrollHeight;
+    return div;
+}
+
+function toolUseLabel(name, input) {
+    if (name === 'update_concept') {
+        const parts = [];
+        if (input.headline) parts.push(`Headline → "${input.headline}"`);
+        if (input.body) parts.push(`Body → "${input.body}"`);
+        if (input.hook) parts.push(`Hook → "${input.hook}"`);
+        if (input.cta) parts.push(`CTA → "${input.cta}"`);
+        return { title: `Modificar concepto [${input.index}]`, desc: parts.join('<br>') };
+    }
+    if (name === 'update_campaign_settings') {
+        const parts = [];
+        if (input.dailyBudget !== undefined) parts.push(`Presupuesto → $${input.dailyBudget}/día`);
+        if (input.duration !== undefined) parts.push(`Duración → ${input.duration} días`);
+        if (input.campaignName) parts.push(`Nombre → "${input.campaignName}"`);
+        return { title: 'Modificar campaña', desc: parts.join('<br>') };
+    }
+    if (name === 'update_targeting') {
+        const parts = [];
+        if (input.countries) parts.push(`Países → ${input.countries.join(', ')}`);
+        if (input.ageMin !== undefined || input.ageMax !== undefined)
+            parts.push(`Edad → ${input.ageMin || '?'}-${input.ageMax || '?'}`);
+        if (input.gender) parts.push(`Género → ${ input.gender === '1' ? 'Hombres' : input.gender === '2' ? 'Mujeres' : 'Todos' }`);
+        return { title: 'Modificar targeting', desc: parts.join('<br>') };
+    }
+    if (name === 'select_concepts') {
+        return { title: `${input.action === 'select' ? 'Seleccionar' : 'Deseleccionar'} conceptos`,
+            desc: `Índices: ${input.indices.join(', ')}` };
+    }
+    return { title: name, desc: JSON.stringify(input) };
+}
+
+function applyToolUse(name, input) {
+    if (name === 'update_concept') {
+        const c = state.concepts[input.index];
+        if (!c) return;
+        if (input.headline !== undefined) c.headline = input.headline;
+        if (input.body !== undefined) c.body = input.body;
+        if (input.hook !== undefined) c.hook = input.hook;
+        if (input.cta !== undefined) c.cta = input.cta;
+        saveState();
+        renderConcepts();
+        updateCampaignSummary();
+    }
+    if (name === 'update_campaign_settings') {
+        if (input.dailyBudget !== undefined) { $('dailyBudget').value = input.dailyBudget; updateBudgetHint(); }
+        if (input.duration !== undefined) { $('campaignDuration').value = input.duration; updateBudgetHint(); }
+        if (input.campaignName) $('campaignName').value = input.campaignName;
+    }
+    if (name === 'update_targeting') {
+        if (input.countries) $('targetCountries').value = input.countries.join(', ');
+        if (input.ageMin !== undefined) $('ageMin').value = input.ageMin;
+        if (input.ageMax !== undefined) $('ageMax').value = input.ageMax;
+        if (input.gender) $('targetGender').value = input.gender;
+    }
+    if (name === 'select_concepts') {
+        for (const i of (input.indices || [])) {
+            if (state.concepts[i]) state.concepts[i].selected = input.action === 'select';
+        }
+        saveState();
+        renderConcepts();
+        updateCampaignSummary();
+    }
+}
+
+function showPendingActions(toolUses) {
+    const panel = $('chatPendingActions');
+    if (!toolUses.length) { panel.classList.add('hidden'); return; }
+    panel.innerHTML = toolUses.map(tu => {
+        const { title, desc } = toolUseLabel(tu.name, tu.input);
+        return `<div class="chat-action-card" data-tool="${tu.name}" data-input='${JSON.stringify(tu.input)}'>
+            <div class="chat-action-card-title">⚡ ${title}</div>
+            <div class="chat-action-card-desc">${desc}</div>
+            <div class="chat-action-btns">
+                <button class="btn-apply" onclick="applyActionCard(this)">✓ Aplicar</button>
+                <button class="btn-ignore" onclick="this.closest('.chat-action-card').remove(); checkActionsPanel()">Ignorar</button>
+            </div>
+        </div>`;
+    }).join('');
+    panel.classList.remove('hidden');
+}
+
+window.applyActionCard = function(btn) {
+    const card = btn.closest('.chat-action-card');
+    const name = card.dataset.tool;
+    const input = JSON.parse(card.dataset.input);
+    applyToolUse(name, input);
+    card.innerHTML = `<div style="color:#a3e635;font-size:12px;font-weight:600">✓ Aplicado</div>`;
+    setTimeout(() => { card.remove(); checkActionsPanel(); }, 800);
+};
+
+window.checkActionsPanel = function() {
+    const panel = $('chatPendingActions');
+    if (!panel.querySelector('.chat-action-card')) panel.classList.add('hidden');
+};
+
+async function sendChatMessage() {
+    const input = $('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    renderChatMsg('user', text);
+
+    chatHistory.push({ role: 'user', content: text });
+
+    const typing = renderChatMsg('assistant', '<span class="chat-typing">Claude está escribiendo...</span>');
+    $('chatSend').disabled = true;
+
+    try {
+        const res = await fetch('/api/claude-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ messages: chatHistory, context: chatContext() })
+        });
+        const data = await res.json();
+        typing.remove();
+
+        if (!res.ok) throw new Error(data.error);
+
+        const replyText = data.text || '(sin respuesta)';
+        renderChatMsg('assistant', replyText);
+
+        // Add assistant reply to history (with full content for tool use continuity)
+        chatHistory.push({
+            role: 'assistant',
+            content: [
+                ...(replyText ? [{ type: 'text', text: replyText }] : []),
+                ...(data.toolUses || [])
+            ]
+        });
+
+        // Show tool use action cards
+        if (data.toolUses?.length > 0) {
+            showPendingActions(data.toolUses);
+            // Add tool results to history so Claude knows they were applied
+            chatHistory.push({
+                role: 'user',
+                content: data.toolUses.map(tu => ({
+                    type: 'tool_result',
+                    tool_use_id: tu.id,
+                    content: 'Cambio aplicado correctamente'
+                }))
+            });
+        }
+    } catch (err) {
+        typing.remove();
+        renderChatMsg('error', `❌ ${err.message}`);
+    } finally {
+        $('chatSend').disabled = false;
+        input.focus();
+    }
+}
+
+function initChat() {
+    $('chatToggle').addEventListener('click', () => $('chatPanel').classList.toggle('hidden'));
+    $('chatClose').addEventListener('click', () => $('chatPanel').classList.add('hidden'));
+    $('chatSend').addEventListener('click', sendChatMessage);
+    $('chatInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); }
+    });
+}
+
 // ── Boot ───────────────────────────────────────────────────
 init();
+initChat();

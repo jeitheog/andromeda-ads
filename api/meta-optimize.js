@@ -2,19 +2,18 @@ export const config = { maxDuration: 60 };
 const BASE = 'https://graph.facebook.com/v19.0';
 
 export default async function handler(req, res) {
-    // GET analysis (POST) or apply optimizations (PATCH)
     if (req.method === 'PATCH') return applyOptimizations(req, res);
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY no configurada' });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY no configurada' });
 
     const { campaignId, stats, briefing } = req.body;
     if (!stats) return res.status(400).json({ error: 'Faltan stats' });
 
-    const prompt = `Eres un experto Media Buyer de Meta Ads especializado en moda y ropa.
+    const systemPrompt = `Eres un experto Media Buyer de Meta Ads especializado en moda y ropa. Respondes ÚNICAMENTE con JSON válido, sin markdown ni explicaciones.`;
 
-BRIEFING DEL CLIENTE:
+    const userPrompt = `BRIEFING DEL CLIENTE:
 ${briefing ? `Producto: ${briefing.product}\nCliente ideal: ${briefing.audience}\nDiferenciador: ${briefing.differentiator}` : 'Tienda de moda'}
 
 DATOS DE RENDIMIENTO (últimos 7 días):
@@ -29,7 +28,7 @@ DECISIONES A TOMAR:
 3. Mantén los demás
 4. Sugiere mejoras de copy específicas
 
-Responde ÚNICAMENTE con JSON válido:
+Responde ÚNICAMENTE con este JSON exacto:
 {
   "insights": "Análisis breve de 2-3 frases del rendimiento general",
   "pause": ["adId1", "adId2"],
@@ -39,20 +38,25 @@ Responde ÚNICAMENTE con JSON válido:
 }`;
 
     try {
-        const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        const r = await fetch('https://api.anthropic.com/v1/messages', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            headers: {
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+            },
             body: JSON.stringify({
-                model: 'gpt-4o',
+                model: 'claude-sonnet-4-6',
                 max_tokens: 1000,
-                response_format: { type: 'json_object' },
-                messages: [{ role: 'user', content: prompt }]
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userPrompt }]
             })
         });
         const d = await r.json();
-        if (!r.ok) throw new Error(d.error?.message || `OpenAI ${r.status}`);
-        const result = JSON.parse(d.choices[0].message.content);
-        return res.json(result);
+        if (!r.ok) throw new Error(d.error?.message || `Claude ${r.status}`);
+        const text = d.content[0].text.trim();
+        const jsonStr = text.startsWith('{') ? text : text.substring(text.indexOf('{'));
+        return res.json(JSON.parse(jsonStr));
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
@@ -65,7 +69,6 @@ async function applyOptimizations(req, res) {
     const { pause = [], scale = [] } = req.body;
     const errors = [];
 
-    // Pause ads
     for (const adId of pause) {
         try {
             const r = await fetch(`${BASE}/${adId}`, {
@@ -78,10 +81,8 @@ async function applyOptimizations(req, res) {
         } catch (e) { errors.push(`Pause ${adId}: ${e.message}`); }
     }
 
-    // Scale ad sets (update daily budget via ad set)
     for (const { adId, newBudget } of scale) {
         try {
-            // First get the ad set ID from the ad
             const adRes = await fetch(`${BASE}/${adId}?fields=adset_id&access_token=${token}`);
             const adData = await adRes.json();
             if (adData.adset_id) {
