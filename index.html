@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,701 +8,750 @@
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
 </head>
+
 <body>
-<div id="app">
+  <div id="app">
 
-  <!-- Sidebar -->
-  <aside class="sidebar glass">
-    <div class="logo">
-      <span class="logo-icon">🌌</span>
-      <div>
-        <h1>Andromeda <span>Ads</span></h1>
-        <p class="logo-sub">Meta AI Automation</p>
-      </div>
-    </div>
-
-    <nav class="sidebar-nav">
-      <button class="nav-btn active" data-view="setup">
-        <span class="nav-icon">⚙️</span>
-        <span>Configuración</span>
-        <span class="nav-badge" id="badgeSetup"></span>
-      </button>
-      <button class="nav-btn" data-view="briefing">
-        <span class="nav-icon">📋</span>
-        <span>Briefing de Marca</span>
-        <span class="nav-badge" id="badgeBriefing"></span>
-      </button>
-      <button class="nav-btn" data-view="concepts">
-        <span class="nav-icon">💡</span>
-        <span>Conceptos y Creativos</span>
-        <span class="nav-badge" id="badgeConcepts"></span>
-      </button>
-      <button class="nav-btn" data-view="campaign">
-        <span class="nav-icon">🚀</span>
-        <span>Lanzar Campaña</span>
-        <span class="nav-badge" id="badgeCampaign"></span>
-      </button>
-      <button class="nav-btn" data-view="dashboard">
-        <span class="nav-icon">📊</span>
-        <span>Dashboard</span>
-        <span class="nav-badge" id="badgeDashboard"></span>
-      </button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="agent-status">
-        <div class="agent-dot" id="agentDot"></div>
-        <span id="agentLabel">Agentes listos</span>
-      </div>
-    </div>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="workspace">
-
-    <!-- ── VIEW: SETUP ── -->
-    <section id="viewSetup" class="view active">
-      <div class="view-header">
-        <h2>🔌 Plataformas de Publicidad</h2>
-        <p class="view-sub">Conecta tus cuentas publicitarias para activar la automatización con IA</p>
-      </div>
-
-      <!-- Platform connection cards -->
-      <div class="platform-cards">
-
-        <!-- Meta -->
-        <div class="platform-card" id="platformMeta" data-platform="meta">
-          <div class="platform-card-top">
-            <div class="platform-logo meta-logo">
-              <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-                <path d="M18 3C9.716 3 3 9.716 3 18s6.716 15 15 15 15-6.716 15-15S26.284 3 18 3Z" fill="url(#mg)"/>
-                <path d="M13.5 14.5c0-1.1.45-2 1.2-2 .66 0 1.05.38 1.8 1.7l3 5.5 3-5.5c.75-1.32 1.14-1.7 1.8-1.7.75 0 1.2.9 1.2 2V22h-2v-5.5L21 21h-1.5l-1.5-4.5V22h-2v-5.5L14.5 21H13v-6.5Z" fill="#fff"/>
-                <defs><linearGradient id="mg" x1="3" y1="3" x2="33" y2="33" gradientUnits="userSpaceOnUse"><stop stop-color="#1877F2"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
-              </svg>
-            </div>
-            <div class="platform-info">
-              <span class="platform-name">Meta Ads</span>
-              <span class="platform-channels">Facebook · Instagram · Reels</span>
-            </div>
-            <div class="platform-status-badge" id="metaBadge">
-              <span class="status-dot"></span>
-              <span class="status-text">Sin conectar</span>
-            </div>
-          </div>
-          <p class="platform-desc">Crea y gestiona campañas de conversión en Facebook e Instagram con optimización automática por IA.</p>
-          <button class="btn btn-platform-connect" id="btnOpenMeta">Configurar →</button>
-        </div>
-
-        <!-- Google Ads -->
-        <div class="platform-card" id="platformGoogle" data-platform="google">
-          <div class="platform-card-top">
-            <div class="platform-logo google-logo">
-              <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
-                <text y="22" font-size="24" font-family="Arial" font-weight="bold">
-                  <tspan fill="#4285F4">G</tspan>
-                </text>
-              </svg>
-            </div>
-            <div class="platform-info">
-              <span class="platform-name">Google Ads</span>
-              <span class="platform-channels">Search · Shopping · YouTube</span>
-            </div>
-            <div class="platform-status-badge" id="googleBadge">
-              <span class="status-dot"></span>
-              <span class="status-text">Sin conectar</span>
-            </div>
-          </div>
-          <p class="platform-desc">Campañas de búsqueda y Shopping para capturar intención de compra activa en Google y YouTube.</p>
-          <button class="btn btn-platform-google" id="btnOpenGoogle">Configurar →</button>
-        </div>
-
-        <!-- TikTok -->
-        <div class="platform-card" id="platformTikTok" data-platform="tiktok">
-          <div class="platform-card-top">
-            <div class="platform-logo tiktok-logo">
-              <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
-                <text y="22" font-size="22" font-family="Arial" font-weight="bold" fill="#FE2C55">♪</text>
-              </svg>
-            </div>
-            <div class="platform-info">
-              <span class="platform-name">TikTok Ads</span>
-              <span class="platform-channels">In-Feed · TopView · Spark</span>
-            </div>
-            <div class="platform-status-badge" id="tiktokBadge">
-              <span class="status-dot"></span>
-              <span class="status-text">Sin conectar</span>
-            </div>
-          </div>
-          <p class="platform-desc">Anuncios de imagen y vídeo en TikTok para audiencias jóvenes con alto potencial de descubrimiento.</p>
-          <button class="btn btn-platform-tiktok" id="btnOpenTikTok">Configurar →</button>
-        </div>
-
-      </div>
-
-      <!-- Meta credentials panel (expandable) -->
-      <div class="platform-form-panel glass" id="metaFormPanel">
-        <div class="panel-header">
-          <div class="panel-title-row">
-            <span class="panel-platform-icon">📘</span>
-            <h3>Conectar Meta Ads</h3>
-          </div>
-          <button class="btn btn-ghost btn-sm" id="btnCloseMetaPanel">✕ Cerrar</button>
-        </div>
-
-        <div class="panel-body">
-          <div class="panel-form-col">
-            <div class="form-group">
-              <label>Access Token (token de larga duración)</label>
-              <input type="password" id="metaToken" placeholder="EAAxxxxxxxxx..." />
-            </div>
-            <div class="form-group">
-              <label>Ad Account ID</label>
-              <input type="text" id="metaAdAccount" placeholder="act_123456789" />
-            </div>
-            <div class="form-group">
-              <label>Facebook Page ID</label>
-              <input type="text" id="metaPageId" placeholder="123456789" />
-            </div>
-            <div id="metaStatus" class="status-msg hidden"></div>
-            <button class="btn btn-primary" id="btnVerifyMeta">🔗 Verificar Conexión</button>
-          </div>
-
-          <div class="panel-guide-col">
-            <h4 class="card-title">📖 Cómo obtener las credenciales</h4>
-            <ol class="setup-steps">
-              <li>
-                <strong>Crea una Meta App</strong>
-                <p>Ve a <a href="https://developers.facebook.com/apps/create" target="_blank" rel="noopener">developers.facebook.com</a> → Crear App → Tipo: <em>Business</em></p>
-              </li>
-              <li>
-                <strong>Añade Marketing API</strong>
-                <p>En tu app → Productos → Añadir Marketing API</p>
-              </li>
-              <li>
-                <strong>Obtén permisos</strong>
-                <p>Necesitas: <code>ads_management</code>, <code>ads_read</code>, <code>pages_read_engagement</code></p>
-              </li>
-              <li>
-                <strong>Genera tu Access Token</strong>
-                <p><a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noopener">Graph API Explorer</a> → selecciona tu app → genera token de 60 días</p>
-              </li>
-              <li>
-                <strong>Ad Account ID</strong>
-                <p><a href="https://business.facebook.com" target="_blank" rel="noopener">business.facebook.com</a> → Cuentas publicitarias → copia <code>act_XXXXX</code></p>
-              </li>
-            </ol>
-          </div>
+    <!-- Sidebar -->
+    <aside class="sidebar glass">
+      <div class="logo">
+        <span class="logo-icon">🌌</span>
+        <div>
+          <h1>Andromeda <span>Ads</span></h1>
+          <p class="logo-sub">Meta AI Automation</p>
         </div>
       </div>
 
-      <!-- Google credentials panel -->
-      <div class="platform-form-panel glass" id="googleFormPanel">
-        <div class="panel-header">
-          <div class="panel-title-row">
-            <span class="panel-platform-icon">🔵</span>
-            <h3>Conectar Google Ads</h3>
-          </div>
-          <button class="btn btn-ghost btn-sm" id="btnCloseGooglePanel">✕ Cerrar</button>
-        </div>
-        <div class="panel-body">
-          <div class="panel-form-col">
-            <div class="form-group">
-              <label>Customer ID</label>
-              <input type="text" id="googleCustomerId" placeholder="123-456-7890" />
-            </div>
-            <div class="form-group">
-              <label>Developer Token</label>
-              <input type="password" id="googleDevToken" placeholder="tu_developer_token" />
-            </div>
-            <div class="form-group">
-              <label>OAuth2 Access Token</label>
-              <input type="password" id="googleAccessToken" placeholder="ya29.xxxxxxxxx" />
-            </div>
-            <div id="googleStatus" class="status-msg hidden"></div>
-            <button class="btn btn-primary" id="btnVerifyGoogle">🔗 Verificar Conexión</button>
-          </div>
-          <div class="panel-guide-col">
-            <h4 class="card-title">📖 Cómo obtener las credenciales</h4>
-            <ol class="setup-steps">
-              <li>
-                <strong>Activa la Google Ads API</strong>
-                <p>Ve a <a href="https://developers.google.com/google-ads/api/docs/get-started/introduction" target="_blank" rel="noopener">Google Ads API</a> → solicita acceso → obtendrás un Developer Token en tu cuenta MCC</p>
-              </li>
-              <li>
-                <strong>Customer ID</strong>
-                <p>Tu cuenta de Google Ads → menú superior → número con formato <code>123-456-7890</code></p>
-              </li>
-              <li>
-                <strong>Access Token (OAuth2)</strong>
-                <p>Usa <a href="https://developers.google.com/oauthplayground" target="_blank" rel="noopener">OAuth Playground</a> → scope: <code>https://www.googleapis.com/auth/adwords</code> → genera token</p>
-              </li>
-            </ol>
-          </div>
+      <nav class="sidebar-nav">
+        <button class="nav-btn active" data-view="setup">
+          <span class="nav-icon">⚙️</span>
+          <span>Configuración</span>
+          <span class="nav-badge" id="badgeSetup"></span>
+        </button>
+        <button class="nav-btn" data-view="briefing">
+          <span class="nav-icon">📋</span>
+          <span>Briefing de Marca</span>
+          <span class="nav-badge" id="badgeBriefing"></span>
+        </button>
+        <button class="nav-btn" data-view="concepts">
+          <span class="nav-icon">💡</span>
+          <span>Conceptos y Creativos</span>
+          <span class="nav-badge" id="badgeConcepts"></span>
+        </button>
+        <button class="nav-btn" data-view="campaign">
+          <span class="nav-icon">🚀</span>
+          <span>Lanzar Campaña</span>
+          <span class="nav-badge" id="badgeCampaign"></span>
+        </button>
+        <button class="nav-btn" data-view="dashboard">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard</span>
+          <span class="nav-badge" id="badgeDashboard"></span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="agent-status">
+          <div class="agent-dot" id="agentDot"></div>
+          <span id="agentLabel">Agentes listos</span>
         </div>
       </div>
+    </aside>
 
-      <!-- TikTok credentials panel -->
-      <div class="platform-form-panel glass" id="tiktokFormPanel">
-        <div class="panel-header">
-          <div class="panel-title-row">
-            <span class="panel-platform-icon">🎵</span>
-            <h3>Conectar TikTok Ads</h3>
-          </div>
-          <button class="btn btn-ghost btn-sm" id="btnCloseTikTokPanel">✕ Cerrar</button>
+    <!-- Main Content -->
+    <main class="workspace">
+
+      <!-- ── VIEW: SETUP ── -->
+      <section id="viewSetup" class="view active">
+        <div class="view-header">
+          <h2>🔌 Plataformas de Publicidad</h2>
+          <p class="view-sub">Conecta tus cuentas publicitarias para activar la automatización con IA</p>
         </div>
-        <div class="panel-body">
-          <div class="panel-form-col">
-            <div class="form-group">
-              <label>Access Token</label>
-              <input type="password" id="tiktokAccessToken" placeholder="tu_access_token_tiktok" />
-            </div>
-            <div class="form-group">
-              <label>Advertiser ID</label>
-              <input type="text" id="tiktokAdvertiserId" placeholder="7000000000000000000" />
-            </div>
-            <div id="tiktokStatus" class="status-msg hidden"></div>
-            <button class="btn btn-primary" id="btnVerifyTikTok">🔗 Verificar Conexión</button>
-          </div>
-          <div class="panel-guide-col">
-            <h4 class="card-title">📖 Cómo obtener las credenciales</h4>
-            <ol class="setup-steps">
-              <li>
-                <strong>Crea una app en TikTok for Business</strong>
-                <p>Ve a <a href="https://ads.tiktok.com/marketing_api/apps/" target="_blank" rel="noopener">TikTok Marketing API</a> → Crear App → tipo: <em>Web</em></p>
-              </li>
-              <li>
-                <strong>Obtén el Access Token</strong>
-                <p>En tu app → Authorization → genera un token de larga duración con permisos de <code>Ads Management</code></p>
-              </li>
-              <li>
-                <strong>Advertiser ID</strong>
-                <p><a href="https://ads.tiktok.com" target="_blank" rel="noopener">ads.tiktok.com</a> → tu cuenta → el número de 19 dígitos en la URL</p>
-              </li>
-            </ol>
-          </div>
-        </div>
-      </div>
 
-      <!-- ── AI Provider API Keys ── -->
-      <div class="card glass ai-keys-card">
-        <h3 class="card-title">🤖 APIs de Inteligencia Artificial</h3>
-        <p class="view-sub" style="margin-bottom:16px">Pega tus claves para activar la IA. Se guardan en tu navegador y nunca se envían a terceros.</p>
-        <div class="ai-keys-grid">
+        <!-- Platform connection cards -->
+        <div class="platform-cards">
 
-          <!-- Claude / Anthropic -->
-          <div class="ai-key-item">
-            <div class="ai-key-header">
-              <span class="ai-key-icon">✦</span>
-              <div class="ai-key-info">
-                <span class="ai-key-name">Jarvi · Anthropic</span>
-                <span class="ai-key-uses">Conceptos · Análisis · Chat · Optimización</span>
+          <!-- Meta -->
+          <div class="platform-card" id="platformMeta" data-platform="meta">
+            <div class="platform-card-top">
+              <div class="platform-logo meta-logo">
+                <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+                  <path d="M18 3C9.716 3 3 9.716 3 18s6.716 15 15 15 15-6.716 15-15S26.284 3 18 3Z" fill="url(#mg)" />
+                  <path
+                    d="M13.5 14.5c0-1.1.45-2 1.2-2 .66 0 1.05.38 1.8 1.7l3 5.5 3-5.5c.75-1.32 1.14-1.7 1.8-1.7.75 0 1.2.9 1.2 2V22h-2v-5.5L21 21h-1.5l-1.5-4.5V22h-2v-5.5L14.5 21H13v-6.5Z"
+                    fill="#fff" />
+                  <defs>
+                    <linearGradient id="mg" x1="3" y1="3" x2="33" y2="33" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#1877F2" />
+                      <stop offset="1" stop-color="#a855f7" />
+                    </linearGradient>
+                  </defs>
+                </svg>
               </div>
-              <span class="ai-key-badge" id="claudeKeyBadge">Sin clave</span>
-            </div>
-            <div class="ai-key-row">
-              <input type="password" id="anthropicKeyInput" placeholder="sk-ant-api03-..." autocomplete="off" />
-              <a href="https://console.anthropic.com/settings/keys" target="_blank" class="ai-key-link">Obtener →</a>
-            </div>
-          </div>
-
-          <!-- OpenAI -->
-          <div class="ai-key-item">
-            <div class="ai-key-header">
-              <span class="ai-key-icon">⚡</span>
-              <div class="ai-key-info">
-                <span class="ai-key-name">OpenAI</span>
-                <span class="ai-key-uses">Generación de imágenes (gpt-image-1)</span>
+              <div class="platform-info">
+                <span class="platform-name">Meta Ads</span>
+                <span class="platform-channels">Facebook · Instagram · Reels</span>
               </div>
-              <span class="ai-key-badge" id="openaiKeyBadge">Sin clave</span>
+              <div class="platform-status-badge" id="metaBadge">
+                <span class="status-dot"></span>
+                <span class="status-text">Sin conectar</span>
+              </div>
             </div>
-            <div class="ai-key-row">
-              <input type="password" id="openaiKeyInput" placeholder="sk-proj-..." autocomplete="off" />
-              <a href="https://platform.openai.com/api-keys" target="_blank" class="ai-key-link">Obtener →</a>
+            <p class="platform-desc">Crea y gestiona campañas de conversión en Facebook e Instagram con optimización
+              automática por IA.</p>
+            <button class="btn btn-platform-connect" id="btnOpenMeta">Configurar →</button>
+          </div>
+
+          <!-- Google Ads -->
+          <div class="platform-card" id="platformGoogle" data-platform="google">
+            <div class="platform-card-top">
+              <div class="platform-logo google-logo">
+                <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+                  <text y="22" font-size="24" font-family="Arial" font-weight="bold">
+                    <tspan fill="#4285F4">G</tspan>
+                  </text>
+                </svg>
+              </div>
+              <div class="platform-info">
+                <span class="platform-name">Google Ads</span>
+                <span class="platform-channels">Search · Shopping · YouTube</span>
+              </div>
+              <div class="platform-status-badge" id="googleBadge">
+                <span class="status-dot"></span>
+                <span class="status-text">Sin conectar</span>
+              </div>
+            </div>
+            <p class="platform-desc">Campañas de búsqueda y Shopping para capturar intención de compra activa en Google
+              y YouTube.</p>
+            <button class="btn btn-platform-google" id="btnOpenGoogle">Configurar →</button>
+          </div>
+
+          <!-- TikTok -->
+          <div class="platform-card" id="platformTikTok" data-platform="tiktok">
+            <div class="platform-card-top">
+              <div class="platform-logo tiktok-logo">
+                <svg viewBox="0 0 28 28" width="28" height="28" xmlns="http://www.w3.org/2000/svg">
+                  <text y="22" font-size="22" font-family="Arial" font-weight="bold" fill="#FE2C55">♪</text>
+                </svg>
+              </div>
+              <div class="platform-info">
+                <span class="platform-name">TikTok Ads</span>
+                <span class="platform-channels">In-Feed · TopView · Spark</span>
+              </div>
+              <div class="platform-status-badge" id="tiktokBadge">
+                <span class="status-dot"></span>
+                <span class="status-text">Sin conectar</span>
+              </div>
+            </div>
+            <p class="platform-desc">Anuncios de imagen y vídeo en TikTok para audiencias jóvenes con alto potencial de
+              descubrimiento.</p>
+            <button class="btn btn-platform-tiktok" id="btnOpenTikTok">Configurar →</button>
+          </div>
+
+        </div>
+
+        <!-- Meta credentials panel (expandable) -->
+        <div class="platform-form-panel glass" id="metaFormPanel">
+          <div class="panel-header">
+            <div class="panel-title-row">
+              <span class="panel-platform-icon">📘</span>
+              <h3>Conectar Meta Ads</h3>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="btnCloseMetaPanel">✕ Cerrar</button>
+          </div>
+
+          <div class="panel-body">
+            <div class="panel-form-col">
+              <div class="form-group">
+                <label>Access Token (token de larga duración)</label>
+                <input type="password" id="metaToken" placeholder="EAAxxxxxxxxx..." />
+              </div>
+              <div class="form-group">
+                <label>Ad Account ID</label>
+                <input type="text" id="metaAdAccount" placeholder="act_123456789" />
+              </div>
+              <div class="form-group">
+                <label>Facebook Page ID</label>
+                <input type="text" id="metaPageId" placeholder="123456789" />
+              </div>
+              <div id="metaStatus" class="status-msg hidden"></div>
+              <button class="btn btn-primary" id="btnVerifyMeta">🔗 Verificar Conexión</button>
+            </div>
+
+            <div class="panel-guide-col">
+              <h4 class="card-title">📖 Cómo obtener las credenciales</h4>
+              <ol class="setup-steps">
+                <li>
+                  <strong>Crea una Meta App</strong>
+                  <p>Ve a <a href="https://developers.facebook.com/apps/create" target="_blank"
+                      rel="noopener">developers.facebook.com</a> → Crear App → Tipo: <em>Business</em></p>
+                </li>
+                <li>
+                  <strong>Añade Marketing API</strong>
+                  <p>En tu app → Productos → Añadir Marketing API</p>
+                </li>
+                <li>
+                  <strong>Obtén permisos</strong>
+                  <p>Necesitas: <code>ads_management</code>, <code>ads_read</code>, <code>pages_read_engagement</code>
+                  </p>
+                </li>
+                <li>
+                  <strong>Genera tu Access Token</strong>
+                  <p><a href="https://developers.facebook.com/tools/explorer" target="_blank" rel="noopener">Graph API
+                      Explorer</a> → selecciona tu app → genera token de 60 días</p>
+                </li>
+                <li>
+                  <strong>Ad Account ID</strong>
+                  <p><a href="https://business.facebook.com" target="_blank" rel="noopener">business.facebook.com</a> →
+                    Cuentas publicitarias → copia <code>act_XXXXX</code></p>
+                </li>
+              </ol>
             </div>
           </div>
-
-        </div>
-        <div class="ai-keys-footer">
-          <button class="btn btn-primary" id="btnSaveApiKeys">💾 Guardar claves</button>
-          <div id="apiKeysStatus" class="status-msg hidden"></div>
-        </div>
-      </div>
-
-      <!-- Shopify Brand Import Banner -->
-      <div class="shopify-import-card glass" id="shopifyImportCard">
-        <div class="shopify-import-left">
-          <span class="shopify-icon">🛍️</span>
-          <div>
-            <strong>Importar marca desde Shopify</strong>
-            <p>Conecta tu tienda y la IA leerá tus productos, colecciones y copy para rellenar el briefing automáticamente.</p>
-          </div>
-        </div>
-        <div class="shopify-import-right">
-          <input type="text"     id="shopifyShopUrl"   placeholder="tu-tienda.myshopify.com" />
-          <input type="password" id="shopifyTokenInput" placeholder="shpat_xxxxxxxx" />
-          <button class="btn btn-shopify" id="btnImportFromShopify">✨ Analizar tienda con IA</button>
-        </div>
-        <div id="shopifyImportStatus" class="status-msg hidden" style="grid-column:1/-1"></div>
-      </div>
-
-    </section>
-
-    <!-- ── VIEW: BRIEFING ── -->
-    <section id="viewBriefing" class="view">
-      <div class="view-header">
-        <h2>📋 Briefing de Marca</h2>
-        <p class="view-sub">Responde 5 preguntas para que los agentes IA entiendan tu marca y generen anuncios efectivos</p>
-      </div>
-
-      <!-- Product Focus picker -->
-      <div class="card glass product-focus-card">
-        <div class="product-focus-header">
-          <div>
-            <h3 class="card-title" style="margin-bottom:4px">🎯 Producto específico <span class="label-hint">(opcional)</span></h3>
-            <p class="product-focus-hint">Enfoca todos los conceptos y creativos en un solo producto. Si lo dejas vacío, cubrirá toda la marca.</p>
-          </div>
-          <button class="btn btn-secondary btn-sm" id="btnLoadProducts">🛍️ Cargar desde Shopify</button>
         </div>
 
-        <div id="productPickerWrap" class="hidden">
-          <div class="product-search-box">
-            <span class="product-search-icon">🔍</span>
-            <input type="text" id="productSearchInput" placeholder="Buscar producto por nombre..." autocomplete="off" />
-            <button class="btn btn-ghost btn-sm" id="btnClearSearch" title="Limpiar búsqueda">✕</button>
-          </div>
-          <div id="productResultsList" class="product-results-list"></div>
-        </div>
-
-        <div id="selectedProductPreview" class="hidden product-preview-row">
-          <img id="selectedProductImg" class="product-preview-img" alt="" />
-          <div class="product-preview-info">
-            <strong id="selectedProductName"></strong>
-            <span id="selectedProductPrice" class="product-preview-price"></span>
-            <p id="selectedProductDesc" class="product-preview-desc"></p>
-          </div>
-          <button class="btn btn-ghost btn-sm" id="btnClearProduct" style="align-self:flex-start">✕</button>
-        </div>
-
-        <div id="productPickerStatus" class="status-msg hidden"></div>
-      </div>
-
-      <div class="card glass briefing-card">
-        <div class="briefing-form">
-          <div class="form-group">
-            <label>1. ¿Qué vendes exactamente? <span class="label-hint">(producto estrella, precio, materiales, colecciones)</span></label>
-            <textarea id="b1" rows="3" placeholder="Ej: Ropa femenina de tallas grandes, colección primavera-verano 2025. Precio medio: 35€. Tejidos naturales y sostenibles..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>2. ¿Quién es tu cliente ideal? <span class="label-hint">(edad, género, estilo de vida, valores)</span></label>
-            <textarea id="b2" rows="3" placeholder="Ej: Mujeres de 25-45 años que valoran la moda sostenible, buscan looks modernos para el trabajo y el día a día..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>3. ¿Cuál es el mayor problema que resuelves? <span class="label-hint">(dolor del cliente)</span></label>
-            <textarea id="b3" rows="3" placeholder="Ej: Las mujeres de tallas grandes tienen dificultad para encontrar ropa estilosa que les quede bien y no sea cara..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>4. ¿Qué te diferencia de la competencia? <span class="label-hint">(propuesta de valor única)</span></label>
-            <textarea id="b4" rows="3" placeholder="Ej: Diseños exclusivos hechos en España, tallas del 36 al 56, envío gratis en 24h, devolución gratuita..."></textarea>
-          </div>
-          <div class="form-group">
-            <label>5. ¿Cuál es el tono de tu marca? <span class="label-hint">(elige uno o describe)</span></label>
-            <div class="tone-grid" id="toneGrid">
-              <button class="tone-btn" data-tone="elegante y sofisticada">✨ Elegante</button>
-              <button class="tone-btn" data-tone="casual y cercana">😊 Casual</button>
-              <button class="tone-btn" data-tone="atrevida y provocadora">🔥 Atrevida</button>
-              <button class="tone-btn" data-tone="minimalista y clean">🤍 Minimalista</button>
-              <button class="tone-btn" data-tone="divertida y jovial">🎉 Divertida</button>
-              <button class="tone-btn" data-tone="empoderada y feminista">💪 Empoderada</button>
+        <!-- Google credentials panel -->
+        <div class="platform-form-panel glass" id="googleFormPanel">
+          <div class="panel-header">
+            <div class="panel-title-row">
+              <span class="panel-platform-icon">🔵</span>
+              <h3>Conectar Google Ads</h3>
             </div>
-            <input type="hidden" id="b5" value="" />
+            <button class="btn btn-ghost btn-sm" id="btnCloseGooglePanel">✕ Cerrar</button>
+          </div>
+          <div class="panel-body">
+            <div class="panel-form-col">
+              <div class="form-group">
+                <label>Customer ID</label>
+                <input type="text" id="googleCustomerId" placeholder="123-456-7890" />
+              </div>
+              <div class="form-group">
+                <label>Developer Token</label>
+                <input type="password" id="googleDevToken" placeholder="tu_developer_token" />
+              </div>
+              <div class="form-group">
+                <label>OAuth2 Access Token</label>
+                <input type="password" id="googleAccessToken" placeholder="ya29.xxxxxxxxx" />
+              </div>
+              <div id="googleStatus" class="status-msg hidden"></div>
+              <button class="btn btn-primary" id="btnVerifyGoogle">🔗 Verificar Conexión</button>
+            </div>
+            <div class="panel-guide-col">
+              <h4 class="card-title">📖 Cómo obtener las credenciales</h4>
+              <ol class="setup-steps">
+                <li>
+                  <strong>Activa la Google Ads API</strong>
+                  <p>Ve a <a href="https://developers.google.com/google-ads/api/docs/get-started/introduction"
+                      target="_blank" rel="noopener">Google Ads API</a> → solicita acceso → obtendrás un Developer Token
+                    en tu cuenta MCC</p>
+                </li>
+                <li>
+                  <strong>Customer ID</strong>
+                  <p>Tu cuenta de Google Ads → menú superior → número con formato <code>123-456-7890</code></p>
+                </li>
+                <li>
+                  <strong>Access Token (OAuth2)</strong>
+                  <p>Usa <a href="https://developers.google.com/oauthplayground" target="_blank" rel="noopener">OAuth
+                      Playground</a> → scope: <code>https://www.googleapis.com/auth/adwords</code> → genera token</p>
+                </li>
+              </ol>
+            </div>
           </div>
         </div>
-        <div id="briefingStatus" class="status-msg hidden"></div>
-        <button class="btn btn-primary btn-lg" id="btnGenerateConcepts">✨ Generar 10 Conceptos con IA</button>
-      </div>
-    </section>
 
-    <!-- ── VIEW: CONCEPTS ── -->
-    <section id="viewConcepts" class="view">
-      <div class="view-header">
-        <h2>💡 Conceptos y Creativos</h2>
-        <p class="view-sub">Selecciona los conceptos que quieres incluir en tu campaña y genera sus creativos</p>
-      </div>
+        <!-- TikTok credentials panel -->
+        <div class="platform-form-panel glass" id="tiktokFormPanel">
+          <div class="panel-header">
+            <div class="panel-title-row">
+              <span class="panel-platform-icon">🎵</span>
+              <h3>Conectar TikTok Ads</h3>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="btnCloseTikTokPanel">✕ Cerrar</button>
+          </div>
+          <div class="panel-body">
+            <div class="panel-form-col">
+              <div class="form-group">
+                <label>Access Token</label>
+                <input type="password" id="tiktokAccessToken" placeholder="tu_access_token_tiktok" />
+              </div>
+              <div class="form-group">
+                <label>Advertiser ID</label>
+                <input type="text" id="tiktokAdvertiserId" placeholder="7000000000000000000" />
+              </div>
+              <div id="tiktokStatus" class="status-msg hidden"></div>
+              <button class="btn btn-primary" id="btnVerifyTikTok">🔗 Verificar Conexión</button>
+            </div>
+            <div class="panel-guide-col">
+              <h4 class="card-title">📖 Cómo obtener las credenciales</h4>
+              <ol class="setup-steps">
+                <li>
+                  <strong>Crea una app en TikTok for Business</strong>
+                  <p>Ve a <a href="https://ads.tiktok.com/marketing_api/apps/" target="_blank" rel="noopener">TikTok
+                      Marketing API</a> → Crear App → tipo: <em>Web</em></p>
+                </li>
+                <li>
+                  <strong>Obtén el Access Token</strong>
+                  <p>En tu app → Authorization → genera un token de larga duración con permisos de
+                    <code>Ads Management</code>
+                  </p>
+                </li>
+                <li>
+                  <strong>Advertiser ID</strong>
+                  <p><a href="https://ads.tiktok.com" target="_blank" rel="noopener">ads.tiktok.com</a> → tu cuenta → el
+                    número de 19 dígitos en la URL</p>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
 
-      <div class="concepts-toolbar">
-        <span id="conceptsSelectedCount" class="badge-count">0 seleccionados</span>
-        <button class="btn btn-secondary btn-sm" id="btnSelectAllConcepts">✓ Todos</button>
-        <button class="btn btn-primary" id="btnGoToCampaign" disabled>🚀 Configurar Campaña →</button>
-      </div>
+        <!-- ── AI Provider API Keys ── -->
+        <div class="card glass ai-keys-card">
+          <h3 class="card-title">🤖 Tu IA personal — Multi-proveedor</h3>
+          <div class="byok-notice">
+            <span class="byok-icon">🔒</span>
+            <div>
+              <strong>Tus claves, tu control</strong>
+              <p>Cada usuario usa su propia clave de IA. Se guardan <strong>solo en tu navegador</strong> y se envían directamente al proveedor. Andromeda Ads nunca las almacena.</p>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-dim);margin:0 0 16px">Configura al menos uno. Si tienes ambos, Anthropic tiene prioridad para texto e imágenes con OpenAI.</p>
+          <div class="ai-keys-grid">
 
-      <div id="conceptsGrid" class="concepts-grid">
-        <!-- Concept cards injected here -->
-      </div>
+            <!-- Anthropic -->
+            <div class="ai-key-item">
+              <div class="ai-key-header">
+                <span class="ai-key-icon">✦</span>
+                <div class="ai-key-info">
+                  <span class="ai-key-name">Anthropic · Claude</span>
+                  <span class="ai-key-uses">Conceptos · Chat Jarvi · Análisis · Optimización</span>
+                </div>
+                <span class="ai-key-badge" id="claudeKeyBadge">Sin clave</span>
+              </div>
+              <div class="ai-key-row">
+                <input type="password" id="anthropicKeyInput" placeholder="sk-ant-api03-..." autocomplete="off" />
+                <a href="https://console.anthropic.com/settings/keys" target="_blank" class="ai-key-link">Obtener →</a>
+              </div>
+            </div>
 
-      <!-- Image generation modal -->
-      <div id="creativeModal" class="modal hidden">
-        <div class="modal-backdrop"></div>
-        <div class="modal-box glass">
-          <h3 id="modalTitle">Generar Creativo</h3>
-          <div class="modal-tabs">
-            <button class="modal-tab active" data-mode="generate">🎨 Desde cero</button>
-            <button class="modal-tab" id="tabShopify" data-mode="shopify">📦 Foto del producto</button>
-            <button class="modal-tab" data-mode="edit">📸 Mi foto</button>
-            <button class="modal-tab" data-mode="manual">🖼️ Mi imagen</button>
+            <!-- OpenAI -->
+            <div class="ai-key-item">
+              <div class="ai-key-header">
+                <span class="ai-key-icon">⚡</span>
+                <div class="ai-key-info">
+                  <span class="ai-key-name">OpenAI · GPT-4o</span>
+                  <span class="ai-key-uses">Fallback de texto · Imágenes (gpt-image-1)</span>
+                </div>
+                <span class="ai-key-badge" id="openaiKeyBadge">Sin clave</span>
+              </div>
+              <div class="ai-key-row">
+                <input type="password" id="openaiKeyInput" placeholder="sk-proj-..." autocomplete="off" />
+                <a href="https://platform.openai.com/api-keys" target="_blank" class="ai-key-link">Obtener →</a>
+              </div>
+            </div>
+
+          </div>
+          <div class="ai-keys-footer">
+            <button class="btn btn-primary" id="btnSaveApiKeys">💾 Guardar claves en este navegador</button>
+            <div id="apiKeysStatus" class="status-msg hidden"></div>
+          </div>
+        </div>
+
+        <!-- Shopify Brand Import Banner -->
+        <div class="shopify-import-card glass" id="shopifyImportCard">
+          <div class="shopify-import-left">
+            <span class="shopify-icon">🛍️</span>
+            <div>
+              <strong>Importar marca desde Shopify</strong>
+              <p>Conecta tu tienda y la IA leerá tus productos, colecciones y copy para rellenar el briefing
+                automáticamente.</p>
+            </div>
+          </div>
+          <div class="shopify-import-right">
+            <input type="text" id="shopifyShopUrl" placeholder="tu-tienda.myshopify.com" />
+            <input type="password" id="shopifyTokenInput" placeholder="shpat_xxxxxxxx" />
+            <button class="btn btn-shopify" id="btnImportFromShopify">✨ Analizar tienda con IA</button>
+          </div>
+          <div id="shopifyImportStatus" class="status-msg hidden" style="grid-column:1/-1"></div>
+        </div>
+
+      </section>
+
+      <!-- ── VIEW: BRIEFING ── -->
+      <section id="viewBriefing" class="view">
+        <div class="view-header">
+          <h2>📋 Briefing de Marca</h2>
+          <p class="view-sub">Responde 5 preguntas para que los agentes IA entiendan tu marca y generen anuncios
+            efectivos</p>
+        </div>
+
+        <!-- Product Focus picker -->
+        <div class="card glass product-focus-card">
+          <div class="product-focus-header">
+            <div>
+              <h3 class="card-title" style="margin-bottom:4px">🎯 Producto específico <span
+                  class="label-hint">(opcional)</span></h3>
+              <p class="product-focus-hint">Enfoca todos los conceptos y creativos en un solo producto. Si lo dejas
+                vacío, cubrirá toda la marca.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" id="btnLoadProducts">🛍️ Cargar desde Shopify</button>
           </div>
 
-          <div id="modeGenerate" class="modal-mode">
-            <p class="mode-hint">La IA generará una imagen de moda según el concepto del anuncio</p>
+          <div id="productPickerWrap" class="hidden">
+            <div class="product-search-box">
+              <span class="product-search-icon">🔍</span>
+              <input type="text" id="productSearchInput" placeholder="Buscar producto por nombre..."
+                autocomplete="off" />
+              <button class="btn btn-ghost btn-sm" id="btnClearSearch" title="Limpiar búsqueda">✕</button>
+            </div>
+            <div id="productResultsList" class="product-results-list"></div>
+          </div>
+
+          <div id="selectedProductPreview" class="hidden product-preview-row">
+            <img id="selectedProductImg" class="product-preview-img" alt="" />
+            <div class="product-preview-info">
+              <strong id="selectedProductName"></strong>
+              <span id="selectedProductPrice" class="product-preview-price"></span>
+              <p id="selectedProductDesc" class="product-preview-desc"></p>
+            </div>
+            <button class="btn btn-ghost btn-sm" id="btnClearProduct" style="align-self:flex-start">✕</button>
+          </div>
+
+          <div id="productPickerStatus" class="status-msg hidden"></div>
+        </div>
+
+        <div class="card glass briefing-card">
+          <div class="briefing-form">
             <div class="form-group">
-              <label>Estilo visual adicional (opcional)</label>
-              <input type="text" id="genStyle" placeholder="Ej: fondo blanco, modelo morena, luz natural..." />
+              <label>1. ¿Qué vendes exactamente? <span class="label-hint">(producto estrella, precio, materiales,
+                  colecciones)</span></label>
+              <textarea id="b1" rows="3"
+                placeholder="Ej: Ropa femenina de tallas grandes, colección primavera-verano 2025. Precio medio: 35€. Tejidos naturales y sostenibles..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>2. ¿Quién es tu cliente ideal? <span class="label-hint">(edad, género, estilo de vida,
+                  valores)</span></label>
+              <textarea id="b2" rows="3"
+                placeholder="Ej: Mujeres de 25-45 años que valoran la moda sostenible, buscan looks modernos para el trabajo y el día a día..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>3. ¿Cuál es el mayor problema que resuelves? <span class="label-hint">(dolor del
+                  cliente)</span></label>
+              <textarea id="b3" rows="3"
+                placeholder="Ej: Las mujeres de tallas grandes tienen dificultad para encontrar ropa estilosa que les quede bien y no sea cara..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>4. ¿Qué te diferencia de la competencia? <span class="label-hint">(propuesta de valor
+                  única)</span></label>
+              <textarea id="b4" rows="3"
+                placeholder="Ej: Diseños exclusivos hechos en España, tallas del 36 al 56, envío gratis en 24h, devolución gratuita..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>5. ¿Cuál es el tono de tu marca? <span class="label-hint">(elige uno o describe)</span></label>
+              <div class="tone-grid" id="toneGrid">
+                <button class="tone-btn" data-tone="elegante y sofisticada">✨ Elegante</button>
+                <button class="tone-btn" data-tone="casual y cercana">😊 Casual</button>
+                <button class="tone-btn" data-tone="atrevida y provocadora">🔥 Atrevida</button>
+                <button class="tone-btn" data-tone="minimalista y clean">🤍 Minimalista</button>
+                <button class="tone-btn" data-tone="divertida y jovial">🎉 Divertida</button>
+                <button class="tone-btn" data-tone="empoderada y feminista">💪 Empoderada</button>
+              </div>
+              <input type="hidden" id="b5" value="" />
             </div>
           </div>
+          <div id="briefingStatus" class="status-msg hidden"></div>
+          <button class="btn btn-primary btn-lg" id="btnGenerateConcepts">✨ Generar 10 Conceptos con IA</button>
+        </div>
+      </section>
 
-          <div id="modeShopify" class="modal-mode hidden">
-            <p class="mode-hint">Elige una foto del producto seleccionado — la IA la convertirá en anuncio manteniendo el producto idéntico</p>
-            <div id="shopifyPhotosGrid" class="shopify-photos-grid"></div>
-            <p id="shopifyPhotosEmpty" class="mode-hint hidden">No hay producto seleccionado o el producto no tiene imágenes.</p>
-          </div>
+      <!-- ── VIEW: CONCEPTS ── -->
+      <section id="viewConcepts" class="view">
+        <div class="view-header">
+          <h2>💡 Conceptos y Creativos</h2>
+          <p class="view-sub">Selecciona los conceptos que quieres incluir en tu campaña y genera sus creativos</p>
+        </div>
 
-          <div id="modeEdit" class="modal-mode hidden">
-            <p class="mode-hint">Sube una foto de tu producto y la IA añadirá texto y lo adaptará como anuncio</p>
-            <div class="upload-area" id="photoUploadArea">
-              <input type="file" id="photoFileInput" accept="image/*" class="hidden" />
-              <span>📁 Arrastra o haz clic para subir foto</span>
+        <div class="concepts-toolbar">
+          <span id="conceptsSelectedCount" class="badge-count">0 seleccionados</span>
+          <button class="btn btn-secondary btn-sm" id="btnSelectAllConcepts">✓ Todos</button>
+          <button class="btn btn-primary" id="btnGoToCampaign" disabled>🚀 Configurar Campaña →</button>
+        </div>
+
+        <div id="conceptsGrid" class="concepts-grid">
+          <!-- Concept cards injected here -->
+        </div>
+
+        <!-- Image generation modal -->
+        <div id="creativeModal" class="modal hidden">
+          <div class="modal-backdrop"></div>
+          <div class="modal-box glass">
+            <h3 id="modalTitle">Generar Creativo</h3>
+            <div class="modal-tabs">
+              <button class="modal-tab active" data-mode="generate">🎨 Desde cero</button>
+              <button class="modal-tab" id="tabShopify" data-mode="shopify">📦 Foto del producto</button>
+              <button class="modal-tab" data-mode="edit">📸 Mi foto</button>
+              <button class="modal-tab" data-mode="manual">🖼️ Mi imagen</button>
             </div>
-            <img id="photoPreview" class="photo-preview hidden" alt="preview" />
-          </div>
 
-          <div id="modeManual" class="modal-mode hidden">
-            <p class="mode-hint">Usa tu propia imagen. Solo se generará el copy del anuncio.</p>
-            <div class="upload-area" id="manualUploadArea">
-              <input type="file" id="manualFileInput" accept="image/*" class="hidden" />
-              <span>📁 Sube la imagen del anuncio</span>
+            <div id="modeGenerate" class="modal-mode">
+              <p class="mode-hint">La IA generará una imagen de moda según el concepto del anuncio</p>
+              <div class="form-group">
+                <label>Estilo visual adicional (opcional)</label>
+                <input type="text" id="genStyle" placeholder="Ej: fondo blanco, modelo morena, luz natural..." />
+              </div>
             </div>
-            <img id="manualPreview" class="photo-preview hidden" alt="preview" />
-          </div>
 
-          <div id="modalResult" class="modal-result hidden">
-            <img id="generatedCreative" alt="Creative" />
-            <a id="btnDownloadCreative" class="btn btn-secondary btn-sm" download="creative.png">⬇ Descargar</a>
-          </div>
+            <div id="modeShopify" class="modal-mode hidden">
+              <p class="mode-hint">Elige una foto del producto seleccionado — la IA la convertirá en anuncio manteniendo
+                el producto idéntico</p>
+              <div id="shopifyPhotosGrid" class="shopify-photos-grid"></div>
+              <p id="shopifyPhotosEmpty" class="mode-hint hidden">No hay producto seleccionado o el producto no tiene
+                imágenes.</p>
+            </div>
 
-          <div id="modalStatus" class="status-msg hidden"></div>
-          <div class="modal-actions">
-            <button class="btn btn-primary" id="btnGenerateCreative">🎨 Generar</button>
-            <button class="btn btn-ghost" id="btnCloseModal">Cerrar</button>
+            <div id="modeEdit" class="modal-mode hidden">
+              <p class="mode-hint">Sube una foto de tu producto y la IA añadirá texto y lo adaptará como anuncio</p>
+              <div class="upload-area" id="photoUploadArea">
+                <input type="file" id="photoFileInput" accept="image/*" class="hidden" />
+                <span>📁 Arrastra o haz clic para subir foto</span>
+              </div>
+              <img id="photoPreview" class="photo-preview hidden" alt="preview" />
+            </div>
+
+            <div id="modeManual" class="modal-mode hidden">
+              <p class="mode-hint">Usa tu propia imagen. Solo se generará el copy del anuncio.</p>
+              <div class="upload-area" id="manualUploadArea">
+                <input type="file" id="manualFileInput" accept="image/*" class="hidden" />
+                <span>📁 Sube la imagen del anuncio</span>
+              </div>
+              <img id="manualPreview" class="photo-preview hidden" alt="preview" />
+            </div>
+
+            <div id="modalResult" class="modal-result hidden">
+              <img id="generatedCreative" alt="Creative" />
+              <a id="btnDownloadCreative" class="btn btn-secondary btn-sm" download="creative.png">⬇ Descargar</a>
+            </div>
+
+            <div id="modalStatus" class="status-msg hidden"></div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" id="btnGenerateCreative">🎨 Generar</button>
+              <button class="btn btn-ghost" id="btnCloseModal">Cerrar</button>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ── VIEW: CAMPAIGN ── -->
-    <section id="viewCampaign" class="view">
-      <div class="view-header">
-        <h2>🚀 Configurar y Lanzar Campaña</h2>
-        <p class="view-sub">Configura el presupuesto, la audiencia y lanza la campaña de microexperimentación</p>
-      </div>
+      <!-- ── VIEW: CAMPAIGN ── -->
+      <section id="viewCampaign" class="view">
+        <div class="view-header">
+          <h2>🚀 Configurar y Lanzar Campaña</h2>
+          <p class="view-sub">Configura el presupuesto, la audiencia y lanza la campaña de microexperimentación</p>
+        </div>
 
-      <!-- Platform selector -->
-      <div class="campaign-platform-tabs">
-        <button class="camp-tab active" data-platform="meta">📘 Meta (Facebook/Instagram)</button>
-        <button class="camp-tab" data-platform="google">🔵 Google Ads</button>
-        <button class="camp-tab" data-platform="tiktok">🎵 TikTok Ads</button>
-      </div>
-      <input type="hidden" id="activePlatform" value="meta" />
+        <!-- Platform selector -->
+        <div class="campaign-platform-tabs">
+          <button class="camp-tab active" data-platform="meta">📘 Meta (Facebook/Instagram)</button>
+          <button class="camp-tab" data-platform="google">🔵 Google Ads</button>
+          <button class="camp-tab" data-platform="tiktok">🎵 TikTok Ads</button>
+        </div>
+        <input type="hidden" id="activePlatform" value="meta" />
 
-      <div class="campaign-grid">
-        <!-- Campaign Settings -->
+        <div class="campaign-grid">
+          <!-- Campaign Settings -->
+          <div class="card glass">
+            <h3 class="card-title">📌 Configuración de Campaña</h3>
+            <div class="form-group">
+              <label>Nombre de campaña</label>
+              <input type="text" id="campaignName" placeholder="Andromeda_Moda_Ene2025" />
+            </div>
+            <div class="form-group">
+              <label>Objetivo</label>
+              <select id="campaignObjective">
+                <option value="OUTCOME_TRAFFIC" selected>Tráfico al sitio web → Compra (recomendado)</option>
+                <option value="OUTCOME_SALES">Ventas con Pixel (requiere Meta Pixel instalado)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Presupuesto diario por ad set</label>
+              <div class="input-prefix">
+                <span>$</span>
+                <input type="number" id="dailyBudget" value="5" min="1" step="1" />
+              </div>
+              <span class="input-hint" id="budgetHint">$5/día × 7 días = $35 total por concepto</span>
+            </div>
+            <div class="form-group">
+              <label>Duración (días)</label>
+              <input type="number" id="campaignDuration" value="7" min="1" max="30" />
+            </div>
+            <div class="form-group">
+              <label>URL de destino (tu tienda online)</label>
+              <input type="text" id="destinationUrl" placeholder="https://tu-tienda.com/collections/all" />
+            </div>
+          </div>
+
+          <!-- Audience Settings -->
+          <div class="card glass">
+            <h3 class="card-title">🎯 Audiencia</h3>
+            <div class="form-group">
+              <label>País(es)</label>
+              <input type="text" id="targetCountries" value="ES" placeholder="ES, MX, AR..." />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Edad mínima</label>
+                <input type="number" id="ageMin" value="18" min="18" max="65" />
+              </div>
+              <div class="form-group">
+                <label>Edad máxima</label>
+                <input type="number" id="ageMax" value="45" min="18" max="65" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Género</label>
+              <select id="targetGender">
+                <option value="all" selected>Todos</option>
+                <option value="1">Hombres</option>
+                <option value="2">Mujeres</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Intereses (separados por coma)</label>
+              <input type="text" id="targetInterests" value="Moda, Ropa, Compras online, Instagram Fashion" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected concepts summary -->
+        <div class="card glass" id="selectedConceptsSummary">
+          <h3 class="card-title">💡 Conceptos seleccionados (<span id="selectedCount">0</span>)</h3>
+          <div id="selectedConceptsList" class="selected-list"></div>
+        </div>
+
+        <div id="campaignStatus" class="status-msg hidden"></div>
+        <button class="btn btn-primary btn-lg btn-launch" id="btnLaunchCampaign">🚀 Lanzar Campaña Ahora</button>
+      </section>
+
+      <!-- ── VIEW: DASHBOARD ── -->
+      <section id="viewDashboard" class="view">
+        <div class="view-header">
+          <h2>📊 Dashboard de Rendimiento</h2>
+          <p class="view-sub">Seguimiento en tiempo real y optimización automática con IA</p>
+        </div>
+
+        <!-- Campaign selector -->
+        <div class="dashboard-toolbar">
+          <select id="campaignSelector">
+            <option value="">Selecciona una campaña...</option>
+          </select>
+          <button class="btn btn-secondary btn-sm" id="btnRefreshStats">↺ Actualizar</button>
+          <button class="btn btn-primary" id="btnAnalyzeAI">🤖 Analizar con IA</button>
+          <button class="btn btn-warning hidden" id="btnApplyOptimizations">⚡ Aplicar Recomendaciones</button>
+        </div>
+
+        <!-- Pending image upload notice -->
+        <div id="pendingImagesPanel" class="card glass pending-upload-panel hidden">
+          <div class="pending-upload-inner">
+            <span>⚠️ Esta campaña tiene <strong id="pendingCount">0</strong> imagen(es) generada(s) sin subir a
+              Meta.</span>
+            <button class="btn btn-primary btn-sm" id="btnUploadPending">📤 Subir imágenes ahora</button>
+          </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid" id="kpiGrid">
+          <div class="kpi-card glass">
+            <span class="kpi-label">Gasto Total</span>
+            <span class="kpi-value" id="kpiSpend">—</span>
+          </div>
+          <div class="kpi-card glass">
+            <span class="kpi-label">Impresiones</span>
+            <span class="kpi-value" id="kpiImpressions">—</span>
+          </div>
+          <div class="kpi-card glass">
+            <span class="kpi-label">Clics</span>
+            <span class="kpi-value" id="kpiClicks">—</span>
+          </div>
+          <div class="kpi-card glass">
+            <span class="kpi-label">CTR</span>
+            <span class="kpi-value" id="kpiCtr">—</span>
+          </div>
+          <div class="kpi-card glass">
+            <span class="kpi-label">CPM</span>
+            <span class="kpi-value" id="kpiCpm">—</span>
+          </div>
+          <div class="kpi-card glass">
+            <span class="kpi-label">Conversiones</span>
+            <span class="kpi-value" id="kpiConversions">—</span>
+          </div>
+        </div>
+
+        <!-- Ads performance table -->
         <div class="card glass">
-          <h3 class="card-title">📌 Configuración de Campaña</h3>
-          <div class="form-group">
-            <label>Nombre de campaña</label>
-            <input type="text" id="campaignName" placeholder="Andromeda_Moda_Ene2025" />
-          </div>
-          <div class="form-group">
-            <label>Objetivo</label>
-            <select id="campaignObjective">
-              <option value="OUTCOME_TRAFFIC" selected>Tráfico al sitio web → Compra (recomendado)</option>
-              <option value="OUTCOME_SALES">Ventas con Pixel (requiere Meta Pixel instalado)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Presupuesto diario por ad set</label>
-            <div class="input-prefix">
-              <span>$</span>
-              <input type="number" id="dailyBudget" value="5" min="1" step="1" />
-            </div>
-            <span class="input-hint" id="budgetHint">$5/día × 7 días = $35 total por concepto</span>
-          </div>
-          <div class="form-group">
-            <label>Duración (días)</label>
-            <input type="number" id="campaignDuration" value="7" min="1" max="30" />
-          </div>
-          <div class="form-group">
-            <label>URL de destino (tu tienda online)</label>
-            <input type="text" id="destinationUrl" placeholder="https://tu-tienda.com/collections/all" />
+          <h3 class="card-title">📋 Rendimiento por Anuncio</h3>
+          <div class="table-wrap">
+            <table id="adsTable">
+              <thead>
+                <tr>
+                  <th>Anuncio / Concepto</th>
+                  <th>Gasto</th>
+                  <th>Impresiones</th>
+                  <th>CTR</th>
+                  <th>CPM</th>
+                  <th>Conversiones</th>
+                  <th>ROAS</th>
+                  <th>Estado IA</th>
+                </tr>
+              </thead>
+              <tbody id="adsTableBody">
+                <tr>
+                  <td colspan="8" class="table-empty">Selecciona una campaña para ver datos</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Audience Settings -->
-        <div class="card glass">
-          <h3 class="card-title">🎯 Audiencia</h3>
-          <div class="form-group">
-            <label>País(es)</label>
-            <input type="text" id="targetCountries" value="ES" placeholder="ES, MX, AR..." />
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Edad mínima</label>
-              <input type="number" id="ageMin" value="18" min="18" max="65" />
-            </div>
-            <div class="form-group">
-              <label>Edad máxima</label>
-              <input type="number" id="ageMax" value="45" min="18" max="65" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Género</label>
-            <select id="targetGender">
-              <option value="all" selected>Todos</option>
-              <option value="1">Hombres</option>
-              <option value="2">Mujeres</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Intereses (separados por coma)</label>
-            <input type="text" id="targetInterests" value="Moda, Ropa, Compras online, Instagram Fashion" />
-          </div>
+        <!-- AI Optimization Panel -->
+        <div class="card glass hidden" id="optimizationPanel">
+          <h3 class="card-title">🤖 Recomendaciones del Agente Media Buyer</h3>
+          <div id="optimizationContent"></div>
         </div>
-      </div>
+      </section>
 
-      <!-- Selected concepts summary -->
-      <div class="card glass" id="selectedConceptsSummary">
-        <h3 class="card-title">💡 Conceptos seleccionados (<span id="selectedCount">0</span>)</h3>
-        <div id="selectedConceptsList" class="selected-list"></div>
-      </div>
-
-      <div id="campaignStatus" class="status-msg hidden"></div>
-      <button class="btn btn-primary btn-lg btn-launch" id="btnLaunchCampaign">🚀 Lanzar Campaña Ahora</button>
-    </section>
-
-    <!-- ── VIEW: DASHBOARD ── -->
-    <section id="viewDashboard" class="view">
-      <div class="view-header">
-        <h2>📊 Dashboard de Rendimiento</h2>
-        <p class="view-sub">Seguimiento en tiempo real y optimización automática con IA</p>
-      </div>
-
-      <!-- Campaign selector -->
-      <div class="dashboard-toolbar">
-        <select id="campaignSelector">
-          <option value="">Selecciona una campaña...</option>
-        </select>
-        <button class="btn btn-secondary btn-sm" id="btnRefreshStats">↺ Actualizar</button>
-        <button class="btn btn-primary" id="btnAnalyzeAI">🤖 Analizar con IA</button>
-        <button class="btn btn-warning hidden" id="btnApplyOptimizations">⚡ Aplicar Recomendaciones</button>
-      </div>
-
-      <!-- Pending image upload notice -->
-      <div id="pendingImagesPanel" class="card glass pending-upload-panel hidden">
-        <div class="pending-upload-inner">
-          <span>⚠️ Esta campaña tiene <strong id="pendingCount">0</strong> imagen(es) generada(s) sin subir a Meta.</span>
-          <button class="btn btn-primary btn-sm" id="btnUploadPending">📤 Subir imágenes ahora</button>
-        </div>
-      </div>
-
-      <!-- KPI Cards -->
-      <div class="kpi-grid" id="kpiGrid">
-        <div class="kpi-card glass">
-          <span class="kpi-label">Gasto Total</span>
-          <span class="kpi-value" id="kpiSpend">—</span>
-        </div>
-        <div class="kpi-card glass">
-          <span class="kpi-label">Impresiones</span>
-          <span class="kpi-value" id="kpiImpressions">—</span>
-        </div>
-        <div class="kpi-card glass">
-          <span class="kpi-label">Clics</span>
-          <span class="kpi-value" id="kpiClicks">—</span>
-        </div>
-        <div class="kpi-card glass">
-          <span class="kpi-label">CTR</span>
-          <span class="kpi-value" id="kpiCtr">—</span>
-        </div>
-        <div class="kpi-card glass">
-          <span class="kpi-label">CPM</span>
-          <span class="kpi-value" id="kpiCpm">—</span>
-        </div>
-        <div class="kpi-card glass">
-          <span class="kpi-label">Conversiones</span>
-          <span class="kpi-value" id="kpiConversions">—</span>
-        </div>
-      </div>
-
-      <!-- Ads performance table -->
-      <div class="card glass">
-        <h3 class="card-title">📋 Rendimiento por Anuncio</h3>
-        <div class="table-wrap">
-          <table id="adsTable">
-            <thead>
-              <tr>
-                <th>Anuncio / Concepto</th>
-                <th>Gasto</th>
-                <th>Impresiones</th>
-                <th>CTR</th>
-                <th>CPM</th>
-                <th>Conversiones</th>
-                <th>ROAS</th>
-                <th>Estado IA</th>
-              </tr>
-            </thead>
-            <tbody id="adsTableBody">
-              <tr><td colspan="8" class="table-empty">Selecciona una campaña para ver datos</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- AI Optimization Panel -->
-      <div class="card glass hidden" id="optimizationPanel">
-        <h3 class="card-title">🤖 Recomendaciones del Agente Media Buyer</h3>
-        <div id="optimizationContent"></div>
-      </div>
-    </section>
-
-  </main>
-</div>
-
-<!-- ── Jarvi Chat Panel ── -->
-<button id="chatToggle" class="chat-toggle-btn" title="Jarvi — Asistente IA">
-  <span class="chat-toggle-icon">✦</span>
-</button>
-
-<div id="chatPanel" class="chat-panel hidden">
-  <div class="chat-header">
-    <div class="chat-header-info">
-      <span class="chat-header-title">✦ Jarvi</span>
-      <span class="chat-header-sub">Habla y modifica tu campaña</span>
-    </div>
-    <button id="chatClose" class="chat-close-btn">✕</button>
+    </main>
   </div>
 
-  <div id="chatMessages" class="chat-messages">
-    <div class="chat-msg assistant">
-      Hola! Soy Jarvi. Puedo ayudarte a modificar conceptos, cambiar el targeting, ajustar el presupuesto o cualquier cosa de tu campaña. ¿Qué quieres cambiar?
+  <!-- ── Jarvi Chat Panel ── -->
+  <button id="chatToggle" class="chat-toggle-btn" title="Jarvi — Asistente IA">
+    <span class="chat-toggle-icon">✦</span>
+  </button>
+
+  <div id="chatPanel" class="chat-panel hidden">
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <span class="chat-header-title">✦ Jarvi</span>
+        <span class="chat-header-sub">Habla y modifica tu campaña</span>
+      </div>
+      <button id="chatClose" class="chat-close-btn">✕</button>
+    </div>
+
+    <div id="chatMessages" class="chat-messages">
+      <div class="chat-msg assistant">
+        Hola! Soy Jarvi. Puedo ayudarte a modificar conceptos, cambiar el targeting, ajustar el presupuesto o cualquier
+        cosa de tu campaña. ¿Qué quieres cambiar?
+      </div>
+    </div>
+
+    <div id="chatPendingActions" class="chat-pending-actions hidden"></div>
+
+    <div class="chat-input-area">
+      <textarea id="chatInput" class="chat-input" rows="2"
+        placeholder="Ej: cambia el headline del concepto 2, sube el presupuesto a $20, selecciona los primeros 3..."></textarea>
+      <button id="chatSend" class="btn btn-primary btn-sm chat-send-btn">Enviar</button>
     </div>
   </div>
 
-  <div id="chatPendingActions" class="chat-pending-actions hidden"></div>
-
-  <div class="chat-input-area">
-    <textarea id="chatInput" class="chat-input" rows="2"
-      placeholder="Ej: cambia el headline del concepto 2, sube el presupuesto a $20, selecciona los primeros 3..."></textarea>
-    <button id="chatSend" class="btn btn-primary btn-sm chat-send-btn">Enviar</button>
-  </div>
-</div>
-
-<script type="module" src="app.js"></script>
+  <script type="module" src="app.js"></script>
 </body>
+
 </html>

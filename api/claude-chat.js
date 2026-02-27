@@ -1,4 +1,5 @@
 export const config = { maxDuration: 60 };
+import { callAIChat } from './_ai.js';
 
 const TOOLS = [
     {
@@ -58,19 +59,17 @@ const TOOLS = [
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const apiKey = req.headers['x-anthropic-key'] || process.env.ANTHROPIC_API_KEY;
-    if (!apiKey) return res.status(500).json({ error: 'Falta la clave de Jarvi (Anthropic). Añádela en Configuración → APIs de Inteligencia Artificial' });
-
     const { messages, context } = req.body;
     if (!messages?.length) return res.status(400).json({ error: 'Faltan mensajes' });
 
-    // Build context section
     const ctx = context || {};
     const conceptList = (ctx.concepts || [])
         .map((c, i) => `  [${i}] ${c.selected ? '✓' : '○'} "${c.headline}" — ${c.angle}`)
         .join('\n');
 
-    const systemPrompt = `Eres Jarvi, el asistente inteligente de Andromeda Ads, una plataforma de automatización de Meta Ads para tiendas de moda. Tu nombre es Jarvi.
+    const providerName = req.headers['x-anthropic-key'] ? 'Anthropic Claude' : 'OpenAI GPT-4o';
+
+    const system = `Eres Jarvi, el asistente inteligente de Andromeda Ads, una plataforma de automatización de Meta Ads para tiendas de moda. Tu nombre es Jarvi.
 
 ESTADO ACTUAL DE LA APLICACIÓN:
 ${ctx.briefing ? `Briefing: ${ctx.briefing.product} | Audiencia: ${ctx.briefing.audience}` : 'Briefing: no configurado'}
@@ -89,28 +88,14 @@ Cuando el usuario pida cambios, usa las herramientas directamente y confirma qu�
 Responde siempre en español, de forma breve y directa.`;
 
     try {
-        const r = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'claude-sonnet-4-6',
-                max_tokens: 1024,
-                system: systemPrompt,
-                tools: TOOLS,
-                messages
-            })
+        const result = await callAIChat({
+            system,
+            messages,
+            tools: TOOLS,
+            maxTokens: 1024,
+            headers: req.headers
         });
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error?.message || `Claude ${r.status}`);
-
-        const text = d.content.filter(b => b.type === 'text').map(b => b.text).join('');
-        const toolUses = d.content.filter(b => b.type === 'tool_use');
-
-        return res.json({ text, toolUses, stopReason: d.stop_reason });
+        return res.json(result);
     } catch (err) {
         return res.status(500).json({ error: err.message });
     }
