@@ -318,6 +318,34 @@ select {
   margin-top: 4px;
 }
 
+/* ── Required field validation ── */
+.req { color: #f87171; font-weight: 700; }
+
+.field-err-msg {
+  display: none;
+  font-size: 11px;
+  color: #f87171;
+  margin-top: 4px;
+}
+
+input.field-error,
+select.field-error {
+  border-color: #f87171 !important;
+  background: rgba(248, 113, 113, 0.06) !important;
+}
+
+input.field-error + .field-err-msg,
+select.field-error + .field-err-msg {
+  display: block;
+}
+
+button:disabled,
+button[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* ── Buttons ── */
 .btn {
   display: inline-flex;

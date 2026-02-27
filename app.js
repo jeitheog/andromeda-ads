@@ -105,7 +105,7 @@ function init() {
             const view = btn.dataset.view;
             switchView(view);
             if (view === 'concepts' && state.concepts.length > 0) renderConcepts();
-            if (view === 'campaign') renderSelectedSummary();
+            if (view === 'campaign') { renderSelectedSummary(); updateLaunchBtn(); }
             if (view === 'dashboard') populateCampaignSelector();
         });
     });
@@ -189,6 +189,14 @@ function init() {
     $('dailyBudget').addEventListener('input', updateBudgetHint);
     $('campaignDuration').addEventListener('input', updateBudgetHint);
     $('btnLaunchCampaign').addEventListener('click', launchCampaign);
+
+    // Real-time validation: clear error state as user types
+    ['campaignName', 'destinationUrl', 'targetCountries'].forEach(id => {
+        $(id)?.addEventListener('input', () => {
+            $(id).classList.toggle('field-error', !$(id).value.trim());
+            updateLaunchBtn();
+        });
+    });
 
     // Dashboard
     $('btnRefreshStats').addEventListener('click', refreshStats);
@@ -339,6 +347,41 @@ function setCampaignName() {
     const now = new Date();
     const mon = now.toLocaleString('es', { month: 'short' }).toUpperCase();
     $('campaignName').value = `Andromeda_Moda_${mon}${now.getFullYear()}`;
+    updateLaunchBtn();
+}
+
+// ── Campaign form validation ────────────────────────────────
+const REQUIRED_CAMPAIGN_FIELDS = [
+    { id: 'campaignName',    label: 'Nombre de campaña' },
+    { id: 'destinationUrl',  label: 'URL de destino' },
+    { id: 'targetCountries', label: 'País(es)' }
+];
+
+function validateCampaignFields() {
+    const errors = [];
+    REQUIRED_CAMPAIGN_FIELDS.forEach(({ id, label }) => {
+        const el = $(id);
+        const empty = !el?.value?.trim();
+        el?.classList.toggle('field-error', empty);
+        if (empty) errors.push(label);
+    });
+
+    // Page ID is stored in Setup, critical for Meta ads
+    const platform = $('activePlatform')?.value || 'meta';
+    if (platform === 'meta') {
+        const pageId = $('metaPageId')?.value?.trim() || localStorage.getItem('meta_page') || '';
+        if (!pageId) errors.push('Facebook Page ID (Configuración → Meta)');
+    }
+
+    return errors;
+}
+
+function updateLaunchBtn() {
+    const errors = validateCampaignFields();
+    const btn = $('btnLaunchCampaign');
+    if (!btn) return;
+    btn.disabled = errors.length > 0;
+    btn.title = errors.length ? `Faltan: ${errors.join(', ')}` : '';
 }
 
 // ── Setup / Shopify brand import ───────────────────────────
@@ -926,18 +969,11 @@ async function launchCampaign() {
         showStatus('campaignStatus', `❌ Conecta tu cuenta de ${platformNames[platform]} primero (pestaña Configuración)`, 'error'); return;
     }
 
-    // For Meta: Page ID and destination URL are required to create ads (not just ad sets)
-    if (platform === 'meta') {
-        const pageId = $('metaPageId')?.value?.trim() || localStorage.getItem('meta_page') || '';
-        const destUrl = $('destinationUrl').value.trim();
-        if (!pageId) {
-            showStatus('campaignStatus', '❌ Falta el Facebook Page ID — sin él Meta no puede crear los anuncios. Ve a Configuración → Meta y añade tu Page ID.', 'error');
-            return;
-        }
-        if (!destUrl) {
-            showStatus('campaignStatus', '❌ Falta la URL de destino — añade la URL de tu tienda donde irán los anuncios.', 'error');
-            return;
-        }
+    // Validate all required campaign fields
+    const fieldErrors = validateCampaignFields();
+    if (fieldErrors.length) {
+        showStatus('campaignStatus', `❌ Completa los campos obligatorios antes de lanzar: ${fieldErrors.join(', ')}`, 'error');
+        return;
     }
 
     const payload = {

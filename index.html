@@ -561,8 +561,9 @@
           <div class="card glass">
             <h3 class="card-title">📌 Configuración de Campaña</h3>
             <div class="form-group">
-              <label>Nombre de campaña</label>
+              <label>Nombre de campaña <span class="req">*</span></label>
               <input type="text" id="campaignName" placeholder="Andromeda_Moda_Ene2025" />
+              <span class="field-err-msg" id="errCampaignName">Campo obligatorio</span>
             </div>
             <div class="form-group">
               <label>Objetivo</label>
@@ -584,8 +585,9 @@
               <input type="number" id="campaignDuration" value="7" min="1" max="30" />
             </div>
             <div class="form-group">
-              <label>URL de destino (tu tienda online)</label>
+              <label>URL de destino (tu tienda online) <span class="req">*</span></label>
               <input type="text" id="destinationUrl" placeholder="https://tu-tienda.com/collections/all" />
+              <span class="field-err-msg" id="errDestinationUrl">Campo obligatorio</span>
             </div>
           </div>
 
@@ -593,8 +595,9 @@
           <div class="card glass">
             <h3 class="card-title">🎯 Audiencia</h3>
             <div class="form-group">
-              <label>País(es)</label>
+              <label>País(es) <span class="req">*</span></label>
               <input type="text" id="targetCountries" value="ES" placeholder="ES, MX, AR..." />
+              <span class="field-err-msg" id="errTargetCountries">Campo obligatorio</span>
             </div>
             <div class="form-row">
               <div class="form-group">
