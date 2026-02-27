@@ -1408,13 +1408,6 @@ async function sendChatMessage() {
         const replyText = data.text || '(sin respuesta)';
         renderChatMsg('assistant', replyText);
 
-        // Update Global AI Badge
-        const badge = document.getElementById('aiProviderBadge');
-        if (badge && data.provider) {
-            badge.textContent = `IA: ${data.provider.toUpperCase()} (${data.provider === 'openai' ? 'GPT-4o' : 'Claude 3.5'})`;
-            badge.className = `agent-provider-badge ${data.provider.toLowerCase()}`;
-        }
-
         // Add assistant reply to history (with full content for tool use continuity)
         chatHistory.push({
             role: 'assistant',
@@ -1440,8 +1433,8 @@ async function sendChatMessage() {
     } catch (err) {
         typing.remove();
         const msg = err.message || '';
-        if (msg.includes('Falta la clave de Jarvi') || (msg.includes('clave') && msg.includes('Anthropic'))) {
-            showChatKeyForm();
+        if (msg.includes('Configura tu clave') || msg.includes('clave de IA')) {
+            showChatKeyNotice();
         } else {
             renderChatMsg('error', `❌ ${msg}`);
         }
@@ -1451,36 +1444,31 @@ async function sendChatMessage() {
     }
 }
 
-function showChatKeyForm() {
+function showChatKeyNotice() {
     const msgs = $('chatMessages');
-    if (msgs.querySelector('.chat-key-form')) return;
+    if (msgs.querySelector('.chat-key-notice')) return;
     const div = document.createElement('div');
-    div.className = 'chat-key-form';
+    div.className = 'chat-key-notice';
     div.innerHTML = `
-        <p>🔑 Necesito tu clave de Anthropic para funcionar:</p>
-        <input type="password" id="chatAnthropicInput" placeholder="sk-ant-api03-..." autocomplete="off" />
-        <button onclick="window.saveChatKey()">Guardar y continuar</button>
+        <p>Para usar Jarvi necesitas configurar tu clave de IA.</p>
+        <button onclick="window.goToAiSetup()">Ir a Configuración →</button>
     `;
     msgs.appendChild(div);
     msgs.scrollTop = msgs.scrollHeight;
-    setTimeout(() => div.querySelector('input')?.focus(), 100);
 }
 
-window.saveChatKey = function () {
-    const val = document.getElementById('chatAnthropicInput')?.value?.trim();
-    if (!val) return;
-    localStorage.setItem('anthropic_key', val);
-    const form = document.querySelector('.chat-key-form');
-    if (form) form.remove();
-    renderChatMsg('assistant', '✅ ¡Clave guardada! Ya puedes chatear conmigo. ¿En qué te ayudo?');
-    updateAiKeyBadges();
+window.goToAiSetup = function () {
+    $('chatPanel').classList.add('hidden');
+    showView('setup');
+    setTimeout(() => document.getElementById('anthropicKeyInput')?.focus(), 300);
 };
 
 function initChat() {
     $('chatToggle').addEventListener('click', () => {
         $('chatPanel').classList.toggle('hidden');
-        if (!$('chatPanel').classList.contains('hidden') && !localStorage.getItem('anthropic_key')) {
-            showChatKeyForm();
+        if (!$('chatPanel').classList.contains('hidden') &&
+            !localStorage.getItem('anthropic_key') && !localStorage.getItem('openai_key')) {
+            showChatKeyNotice();
         }
     });
     $('chatClose').addEventListener('click', () => $('chatPanel').classList.add('hidden'));
