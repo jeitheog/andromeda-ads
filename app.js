@@ -926,7 +926,7 @@ async function launchCampaign() {
         $('badgeDashboard').classList.add('visible');
         hideLoader();
 
-        const successMsg = `✅ Campaña lanzada: ${payload.campaignName}\n(ID: ${data.campaignId}, ${data.adSetIds.length} Ad Sets, ${data.adIds.length} Ads)`;
+        const successMsg = `⏸️ Campaña creada en PAUSA — revísala en Meta Ads Manager y actívala cuando estés listo\n(ID: ${data.campaignId}, ${data.adSetIds.length} Ad Sets)`;
         showStatus('campaignStatus', successMsg, 'success');
 
         // Auto-upload AI-generated images if platform is Meta and concepts have imageB64
@@ -1002,8 +1002,8 @@ async function uploadPendingImages(campaign, conceptsArg) {
     if (idx >= 0) { state.campaigns[idx].adIds = newAdIds; saveState(); }
 
     const msg = failed > 0
-        ? `✅ Campaña activa — ${uploaded} imagen${uploaded !== 1 ? 'es' : ''} subida${uploaded !== 1 ? 's' : ''}, ${failed} fallaron`
-        : `✅ Campaña activa con ${uploaded} imagen${uploaded !== 1 ? 'es' : ''} — ID: ${campaign.id}`;
+        ? `⏸️ Campaña en pausa — ${uploaded} imagen${uploaded !== 1 ? 'es' : ''} subida${uploaded !== 1 ? 's' : ''}, ${failed} fallaron. Revisa en Meta Ads Manager`
+        : `⏸️ Campaña en pausa con ${uploaded} imagen${uploaded !== 1 ? 'es' : ''} — Actívala en Meta Ads Manager cuando estés listo`;
     showStatus('campaignStatus', msg, uploaded > 0 ? 'success' : 'error');
 
     populateCampaignSelector();

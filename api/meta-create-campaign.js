@@ -43,7 +43,7 @@ export default async function handler(req, res) {
         const campaign = await gql(`${account}/campaigns`, 'POST', token, {
             name: campaignName,
             objective: campaignObjective,
-            status: 'ACTIVE',
+            status: 'PAUSED',
             special_ad_categories: [],
             daily_budget: totalDailyBudgetCents,
             bid_strategy: 'LOWEST_COST_WITHOUT_CAP'
@@ -69,7 +69,7 @@ export default async function handler(req, res) {
                     ...(genders.length > 0 ? { genders } : {}),
                     targeting_automation: { advantage_audience: 0 }
                 },
-                status: 'ACTIVE'
+                status: 'PAUSED'
             };
 
             let adSet;
@@ -128,7 +128,7 @@ export default async function handler(req, res) {
                         adset_id: adSet.id,
                         name: `Ad_${concept.angle.substring(0, 30)}`,
                         creative: { creative_id: creativeId },
-                        status: 'ACTIVE'
+                        status: 'PAUSED'
                     };
                     const ad = await gql(`${account}/ads`, 'POST', token, adBody);
                     adIds.push(ad.id);

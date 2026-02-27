@@ -67,7 +67,7 @@ export default async function handler(req, res) {
             adset_id: adSetId,
             name: `Ad_img_${Date.now()}`,
             creative: { creative_id: creative.id },
-            status: 'ACTIVE'
+            status: 'PAUSED'
         });
 
         return res.json({ adId: ad.id, creativeId: creative.id, imageHash });
