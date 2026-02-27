@@ -10,30 +10,43 @@ async function gql(path, method, token, body) {
         body: JSON.stringify({ ...body, access_token: token })
     });
     const d = await r.json();
-    if (d.error) throw new Error(`Meta API: ${d.error.message}`);
+    if (d.error) {
+        const detail = d.error.error_user_msg || d.error.message || JSON.stringify(d.error);
+        throw new Error(`Meta [${d.error.code}]: ${detail}`);
+    }
     return d;
 }
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const token   = req.headers['x-meta-token'];
-    const account = req.headers['x-meta-account'];
-    const pageId  = req.headers['x-meta-page'];
+    const token = req.headers['x-meta-token'];
+    const rawAccount = req.headers['x-meta-account'];
+    const pageId = req.headers['x-meta-page'];
 
-    if (!token || !account) return res.status(400).json({ error: 'Faltan credenciales de Meta' });
+    if (!token || !rawAccount) return res.status(400).json({ error: 'Faltan credenciales de Meta' });
+
+    // Normalize: Meta requires act_ prefix for ad accounts
+    const account = rawAccount.startsWith('act_') ? rawAccount : `act_${rawAccount}`;
 
     const { campaignName, objective, dailyBudgetUsd, durationDays, destinationUrl, targeting, concepts } = req.body;
 
-    const dailyBudgetCents = Math.round((dailyBudgetUsd || 5) * 100);
+    // CBO: total daily budget on the campaign, split across ad sets automatically
+    const totalDailyBudgetCents = Math.round((dailyBudgetUsd || 5) * 100);
 
     try {
-        // ── 1. Create Campaign ──────────────────────────────
+        // OUTCOME_SALES requires a Meta Pixel — use OUTCOME_TRAFFIC which works without one.
+        // Both drive traffic to the website; conversion tracking is handled by the store's own analytics.
+        const campaignObjective = 'OUTCOME_TRAFFIC';
+
+        // ── 1. Create Campaign with CBO (budget at campaign level) ──
         const campaign = await gql(`${account}/campaigns`, 'POST', token, {
             name: campaignName,
-            objective: objective || 'OUTCOME_TRAFFIC',
+            objective: campaignObjective,
             status: 'ACTIVE',
-            special_ad_categories: []
+            special_ad_categories: [],
+            daily_budget: totalDailyBudgetCents,
+            bid_strategy: 'LOWEST_COST_WITHOUT_CAP'
         });
 
         const adSetIds = [];
@@ -41,36 +54,41 @@ export default async function handler(req, res) {
 
         // ── 2. Create Ad Set + Creative + Ad per concept ────
         for (const concept of concepts) {
-            const geoLocations = (targeting.countries || ['ES']).map(c => ({ country: c }));
             const genders = targeting.gender === '1' ? [1] : targeting.gender === '2' ? [2] : [];
 
-            // Ad Set
+            // Ad Set — Using LINK_CLICKS to avoid Pixel requirement for simpler setup
             const adSetBody = {
                 campaign_id: campaign.id,
                 name: `AdSet_${concept.angle.substring(0, 30)}`,
-                daily_budget: dailyBudgetCents,
                 billing_event: 'IMPRESSIONS',
-                optimization_goal: objective === 'OUTCOME_SALES' ? 'OFFSITE_CONVERSIONS' : 'LINK_CLICKS',
-                bid_strategy: 'LOWEST_COST_WITHOUT_CAP',
+                optimization_goal: 'LINK_CLICKS',
                 targeting: {
-                    geo_locations: { countries: (targeting.countries || ['ES']) },
+                    geo_locations: { countries: targeting.countries || ['ES'] },
                     age_min: targeting.ageMin || 18,
                     age_max: targeting.ageMax || 45,
-                    ...(genders.length > 0 ? { genders } : {})
+                    ...(genders.length > 0 ? { genders } : {}),
+                    targeting_automation: { advantage_audience: 0 }
                 },
                 status: 'ACTIVE'
             };
-            const adSet = await gql(`${account}/adsets`, 'POST', token, adSetBody);
-            adSetIds.push(adSet.id);
 
-            // Upload image if concept has one
+            let adSet;
+            try {
+                adSet = await gql(`${account}/adsets`, 'POST', token, adSetBody);
+                adSetIds.push(adSet.id);
+            } catch (e) {
+                console.error(`Ad Set creation failed for ${concept.angle}:`, e.message);
+                continue; // Skip the rest of this concept if ad set fails
+            }
+
+            // Upload image by URL if concept has one (imageUrl passed instead of heavy base64)
             let imageHash = null;
-            if (concept.imageB64 && pageId) {
+            if (concept.imageUrl) {
                 try {
                     const imgRes = await fetch(`${BASE}/${account}/adimages`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ bytes: concept.imageB64, access_token: token })
+                        body: JSON.stringify({ url: concept.imageUrl, access_token: token })
                     });
                     const imgData = await imgRes.json();
                     imageHash = Object.values(imgData.images || {})[0]?.hash;
@@ -93,22 +111,31 @@ export default async function handler(req, res) {
                 }
             };
 
+            // Creative + Ad
             let creativeId;
             if (pageId) {
-                const creative = await gql(`${account}/adcreatives`, 'POST', token, creativeBody);
-                creativeId = creative.id;
+                try {
+                    const creative = await gql(`${account}/adcreatives`, 'POST', token, creativeBody);
+                    creativeId = creative.id;
+                } catch (e) {
+                    console.warn(`Creative failed (page ID issue?): ${e.message}`);
+                }
             }
 
-            // Ad
-            const adBody = {
-                adset_id: adSet.id,
-                name: `Ad_${concept.angle.substring(0, 30)}`,
-                status: 'ACTIVE'
-            };
-            if (creativeId) adBody.creative = { creative_id: creativeId };
-
-            const ad = await gql(`${account}/ads`, 'POST', token, adBody);
-            adIds.push(ad.id);
+            if (creativeId) {
+                try {
+                    const adBody = {
+                        adset_id: adSet.id,
+                        name: `Ad_${concept.angle.substring(0, 30)}`,
+                        creative: { creative_id: creativeId },
+                        status: 'ACTIVE'
+                    };
+                    const ad = await gql(`${account}/ads`, 'POST', token, adBody);
+                    adIds.push(ad.id);
+                } catch (e) {
+                    console.warn(`Ad creation failed: ${e.message}`);
+                }
+            }
         }
 
         return res.json({ campaignId: campaign.id, adSetIds, adIds });

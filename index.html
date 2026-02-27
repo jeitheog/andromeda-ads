@@ -399,9 +399,10 @@
         <div class="modal-box glass">
           <h3 id="modalTitle">Generar Creativo</h3>
           <div class="modal-tabs">
-            <button class="modal-tab active" data-mode="generate">🎨 Generar desde cero</button>
-            <button class="modal-tab" data-mode="edit">📸 Editar mi foto</button>
-            <button class="modal-tab" data-mode="manual">🖼️ Usar mi imagen</button>
+            <button class="modal-tab active" data-mode="generate">🎨 Desde cero</button>
+            <button class="modal-tab" id="tabShopify" data-mode="shopify">📦 Foto del producto</button>
+            <button class="modal-tab" data-mode="edit">📸 Mi foto</button>
+            <button class="modal-tab" data-mode="manual">🖼️ Mi imagen</button>
           </div>
 
           <div id="modeGenerate" class="modal-mode">
@@ -410,6 +411,12 @@
               <label>Estilo visual adicional (opcional)</label>
               <input type="text" id="genStyle" placeholder="Ej: fondo blanco, modelo morena, luz natural..." />
             </div>
+          </div>
+
+          <div id="modeShopify" class="modal-mode hidden">
+            <p class="mode-hint">Elige una foto del producto seleccionado — la IA la convertirá en anuncio manteniendo el producto idéntico</p>
+            <div id="shopifyPhotosGrid" class="shopify-photos-grid"></div>
+            <p id="shopifyPhotosEmpty" class="mode-hint hidden">No hay producto seleccionado o el producto no tiene imágenes.</p>
           </div>
 
           <div id="modeEdit" class="modal-mode hidden">
@@ -470,8 +477,8 @@
           <div class="form-group">
             <label>Objetivo</label>
             <select id="campaignObjective">
-              <option value="OUTCOME_SALES">Maximizar Compras (Ventas)</option>
-              <option value="OUTCOME_TRAFFIC">Tráfico al sitio web</option>
+              <option value="OUTCOME_TRAFFIC" selected>Tráfico al sitio web → Compra (recomendado)</option>
+              <option value="OUTCOME_SALES">Ventas con Pixel (requiere Meta Pixel instalado)</option>
             </select>
           </div>
           <div class="form-group">
@@ -549,6 +556,14 @@
         <button class="btn btn-secondary btn-sm" id="btnRefreshStats">↺ Actualizar</button>
         <button class="btn btn-primary" id="btnAnalyzeAI">🤖 Analizar con IA</button>
         <button class="btn btn-warning hidden" id="btnApplyOptimizations">⚡ Aplicar Recomendaciones</button>
+      </div>
+
+      <!-- Pending image upload notice -->
+      <div id="pendingImagesPanel" class="card glass pending-upload-panel hidden">
+        <div class="pending-upload-inner">
+          <span>⚠️ Esta campaña tiene <strong id="pendingCount">0</strong> imagen(es) generada(s) sin subir a Meta.</span>
+          <button class="btn btn-primary btn-sm" id="btnUploadPending">📤 Subir imágenes ahora</button>
+        </div>
       </div>
 
       <!-- KPI Cards -->

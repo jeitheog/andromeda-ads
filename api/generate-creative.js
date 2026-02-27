@@ -8,16 +8,38 @@ export default async function handler(req, res) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY no configurada' });
 
-    const productContext = selectedProduct
-        ? `\nFeatured product: "${selectedProduct.title}" at $${selectedProduct.price}. ${(selectedProduct.description || '').substring(0, 200)}`
+    // Build a very specific product anchor so the item stays IDENTICAL across concepts
+    const productAnchor = selectedProduct
+        ? `THE PRODUCT (MUST appear exactly as described — do NOT invent, alter or substitute it):
+"${selectedProduct.title}" — price $${selectedProduct.price}
+${(selectedProduct.description || '').substring(0, 300)}
+Tags/keywords: ${selectedProduct.tags || selectedProduct.type || 'fashion clothing'}
+
+CRITICAL RULE: The garment/item above must look IDENTICAL in every image (same piece, same color, same design, same fabric). Only the background, setting, model pose, lighting and mood change.`
         : '';
 
-    const basePrompt = `Professional fashion advertisement photo for Instagram/Facebook/TikTok.
+    const basePrompt = selectedProduct
+        ? `Professional fashion advertisement for Instagram/Facebook/TikTok.
+
+${productAnchor}
+
+AD CONCEPT FOR THIS IMAGE:
+Angle: "${concept.angle}" — ${concept.hook}
+Headline: "${concept.headline}"
+Mood/style: ${style || 'modern, clean, high-fashion editorial'}
+
+COMPOSITION RULES:
+- The product ("${selectedProduct.title}") must be the HERO of the image — centered, well-lit, clearly visible
+- Change ONLY: background scene, model pose, setting, lighting atmosphere, color grading
+- Do NOT change the product itself — same garment, same color, same design every time
+- Format: 1080x1080px square, high-end brand aesthetic, bold typography overlay
+- Must look like a real paid digital ad for a fashion/clothing brand`
+        : `Professional fashion advertisement photo for Instagram/Facebook/TikTok.
 Concept angle: "${concept.angle}" — ${concept.hook}
-Headline visible in image: "${concept.headline}"${productContext}
+Headline visible in image: "${concept.headline}"
 Style: ${style || 'modern, clean, high-fashion editorial'}
 Requirements: 1080x1080px square format, high-end fashion brand aesthetic, bold typography overlay, vibrant colors.
-The image must look like a real paid digital ad for a clothing/fashion brand.${selectedProduct ? ` Feature the product "${selectedProduct.title}" prominently in the composition.` : ''}`;
+The image must look like a real paid digital ad for a clothing/fashion brand.`;
 
     try {
         let b64;
@@ -32,7 +54,7 @@ The image must look like a real paid digital ad for a clothing/fashion brand.${s
                     prompt: basePrompt,
                     n: 1,
                     size: '1024x1024',
-                    quality: 'medium'
+                    quality: 'high'
                 })
             });
             const d = await r.json();
@@ -46,14 +68,17 @@ The image must look like a real paid digital ad for a clothing/fashion brand.${s
             const form = new FormData();
             form.append('model', 'gpt-image-1');
             form.append('image', blob, 'product.jpg');
-            form.append('prompt', `Transform this product photo into a professional fashion Meta ad.
-Add the text overlay: "${concept.headline}"
-CTA badge: "${concept.cta}"
+            form.append('prompt', `Transform this product photo into a professional fashion ad for Meta/Instagram/TikTok.
+CRITICAL: Keep the original product EXACTLY as it appears — same garment, same color, same design. Do NOT alter the product.
+Add text overlay: "${concept.headline}"
+Add CTA badge: "${concept.cta}"
+Concept angle: "${concept.angle}" — ${concept.hook}
 Style: ${style || 'clean editorial fashion ad, modern typography, Instagram-ready'}
-Keep the original product visible and prominent. Make it look like a real paid advertisement.`);
+Only enhance: background, lighting, color grading, composition. The product stays identical.
+Make it look like a real paid digital advertisement.`);
             form.append('n', '1');
             form.append('size', '1024x1024');
-            form.append('quality', 'medium');
+            form.append('quality', 'high');
 
             const r = await fetch('https://api.openai.com/v1/images/edits', {
                 method: 'POST',

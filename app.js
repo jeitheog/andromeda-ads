@@ -165,8 +165,8 @@ function init() {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            ['modeGenerate','modeEdit','modeManual'].forEach(id => $( id)?.classList.add('hidden'));
-            const modeMap = { generate:'modeGenerate', edit:'modeEdit', manual:'modeManual' };
+            ['modeGenerate','modeShopify','modeEdit','modeManual'].forEach(id => $(id)?.classList.add('hidden'));
+            const modeMap = { generate:'modeGenerate', shopify:'modeShopify', edit:'modeEdit', manual:'modeManual' };
             $(modeMap[tab.dataset.mode])?.classList.remove('hidden');
         });
     });
@@ -183,7 +183,8 @@ function init() {
     $('btnRefreshStats').addEventListener('click', refreshStats);
     $('btnAnalyzeAI').addEventListener('click', analyzeWithAI);
     $('btnApplyOptimizations').addEventListener('click', applyOptimizations);
-    $('campaignSelector').addEventListener('change', () => refreshStats());
+    $('campaignSelector').addEventListener('change', () => { refreshStats(); checkPendingUploads(); });
+    $('btnUploadPending')?.addEventListener('click', uploadToExistingCampaign);
 
     // Restore UI
     if (state.concepts.length > 0) {
@@ -557,8 +558,38 @@ async function selectProduct(minimalProduct) {
             if (res.ok) {
                 state.selectedProduct = full;
                 $('selectedProductDesc').textContent = full.description?.substring(0, 150) || '';
+
+                // Auto-generate briefing with AI
                 if ($('b1')) {
-                    $('b1').value = `${full.title} — $${full.price}. ${full.description || ''}`.substring(0, 400).trim();
+                    $('b1').value = '✨ Generando briefing con IA...';
+                    $('b2').value = ''; $('b3').value = ''; $('b4').value = '';
+                    try {
+                        const ar = await fetch('/api/analyze-product', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ product: full })
+                        });
+                        const analysis = await ar.json();
+                        if (ar.ok) {
+                            $('b1').value = analysis.product        || '';
+                            $('b2').value = analysis.audience       || '';
+                            $('b3').value = analysis.painPoint      || '';
+                            $('b4').value = analysis.differentiator || '';
+                            if (analysis.tone) {
+                                document.querySelectorAll('.tone-btn').forEach(btn => {
+                                    btn.classList.remove('selected');
+                                    if (btn.dataset.tone === analysis.tone) {
+                                        btn.classList.add('selected');
+                                        $('b5').value = analysis.tone;
+                                    }
+                                });
+                            }
+                        } else {
+                            $('b1').value = `${full.title} — $${full.price}`;
+                        }
+                    } catch {
+                        $('b1').value = `${full.title} — $${full.price}`;
+                    }
                 }
             } else {
                 $('selectedProductDesc').textContent = '';
@@ -575,7 +606,8 @@ async function selectProduct(minimalProduct) {
 function clearSelectedProduct() {
     state.selectedProduct = null;
     $('selectedProductPreview').classList.add('hidden');
-    if ($('b1')) $('b1').value = '';
+    if ($('b1')) { $('b1').value = ''; $('b2').value = ''; $('b3').value = ''; $('b4').value = ''; $('b5').value = ''; }
+    document.querySelectorAll('.tone-btn').forEach(b => b.classList.remove('selected'));
     if (_allProducts.length > 0) {
         $('productSearchInput').value = '';
         renderProductList('');
@@ -682,15 +714,42 @@ function updateConceptsToolbar() {
 
 // ── Creative Modal ─────────────────────────────────────────
 let currentConceptIndex = null;
+let selectedShopifyImageUrl = null;
+
 function openModal(index) {
     currentConceptIndex = index;
+    selectedShopifyImageUrl = null;
     const c = state.concepts[index];
     $('modalTitle').textContent = `Creativo: ${c.angle}`;
     $('creativeModal').classList.remove('hidden');
     $('modalResult').classList.add('hidden');
     hideStatus('modalStatus');
+
+    // Populate shopify photos grid
+    const grid = $('shopifyPhotosGrid');
+    const empty = $('shopifyPhotosEmpty');
+    const images = state.selectedProduct?.images || (state.selectedProduct?.image ? [state.selectedProduct.image] : []);
+    grid.innerHTML = '';
+    if (images.length > 0) {
+        empty.classList.add('hidden');
+        grid.classList.remove('hidden');
+        images.forEach(url => {
+            const item = document.createElement('div');
+            item.className = 'shopify-photo-item';
+            item.innerHTML = `<img src="${url}" loading="lazy" />`;
+            item.addEventListener('click', () => {
+                grid.querySelectorAll('.shopify-photo-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+                selectedShopifyImageUrl = url;
+            });
+            grid.appendChild(item);
+        });
+    } else {
+        grid.classList.add('hidden');
+        empty.classList.remove('hidden');
+    }
 }
-function closeModal() { $('creativeModal').classList.add('hidden'); currentConceptIndex = null; }
+function closeModal() { $('creativeModal').classList.add('hidden'); currentConceptIndex = null; selectedShopifyImageUrl = null; }
 
 function setupFileUpload(areaId, inputId, previewId) {
     const area = $(areaId);
@@ -725,9 +784,25 @@ async function generateCreative() {
     hideStatus('modalStatus');
 
     try {
-        let body = { mode: activeTab, concept: c, style, selectedProduct: state.selectedProduct || null };
+        // mode 'shopify' maps to 'edit' on the backend using the product's own photo
+        const backendMode = activeTab === 'shopify' ? 'edit' : activeTab;
+        let body = { mode: backendMode, concept: c, style, selectedProduct: state.selectedProduct || null };
 
-        if (activeTab === 'edit') {
+        if (activeTab === 'shopify') {
+            if (!selectedShopifyImageUrl) throw new Error('Selecciona una foto del producto');
+            // Fetch the Shopify CDN image and convert to base64
+            const imgRes = await fetch(selectedShopifyImageUrl);
+            if (!imgRes.ok) throw new Error('No se pudo cargar la imagen del producto');
+            const blob = await imgRes.blob();
+            const b64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+            body.imageBase64 = b64;
+            body.mimeType = blob.type || 'image/jpeg';
+        } else if (activeTab === 'edit') {
             const src = $('photoPreview')?.src;
             if (!src || src === window.location.href) throw new Error('Sube una foto de producto');
             body.imageBase64 = src.split(',')[1];
@@ -819,7 +894,11 @@ async function launchCampaign() {
             gender:    $('targetGender').value,
             interests: $('targetInterests').value.split(',').map(s => s.trim())
         },
-        concepts: selected
+        // Strip imageB64 (too large), pass imageUrl instead so the backend uploads by URL
+        concepts: selected.map(({ imageB64, ...c }) => ({
+            ...c,
+            imageUrl: c.imageUrl || (state.selectedProduct?.image || null)
+        }))
     };
 
     const apiMap  = { meta: '/api/meta-create-campaign', google: '/api/google-create-campaign', tiktok: '/api/tiktok-create-campaign' };
@@ -836,7 +915,9 @@ async function launchCampaign() {
         const campaign = {
             id: data.campaignId, name: payload.campaignName,
             adSetIds: data.adSetIds, adIds: data.adIds,
-            platform, createdAt: new Date().toISOString()
+            platform, createdAt: new Date().toISOString(),
+            destinationUrl: payload.destinationUrl,
+            conceptAngles: selected.map(c => c.angle)
         };
         state.campaigns.push(campaign);
         saveState();
@@ -845,11 +926,122 @@ async function launchCampaign() {
         $('badgeDashboard').classList.add('visible');
         hideLoader();
         showStatus('campaignStatus', `✅ Campaña lanzada en ${platformNames[platform]} — ID: ${data.campaignId}`, 'success');
-        setTimeout(() => { populateCampaignSelector(); switchView('dashboard'); }, 1500);
+
+        // Auto-upload AI-generated images if platform is Meta and concepts have imageB64
+        const hasImages = platform === 'meta' && selected.some(c => c.imageB64);
+        if (hasImages) {
+            setTimeout(() => uploadPendingImages(campaign, selected), 800);
+        } else {
+            setTimeout(() => { populateCampaignSelector(); switchView('dashboard'); }, 1500);
+        }
     } catch (err) {
         hideLoader();
         showStatus('campaignStatus', `❌ ${err.message}`, 'error');
     }
+}
+
+// ── Image Upload to Running Campaign ───────────────────────
+
+async function uploadPendingImages(campaign, conceptsArg) {
+    const { adSetIds, destinationUrl, conceptAngles } = campaign;
+    if (!adSetIds?.length) { populateCampaignSelector(); switchView('dashboard'); return; }
+
+    // Build list of concepts to upload (keep imageB64)
+    let concepts = conceptsArg;
+    if (!concepts) {
+        // Match by stored angles
+        const angles = conceptAngles || [];
+        concepts = angles.map(angle => state.concepts.find(c => c.angle === angle)).filter(Boolean);
+    }
+
+    const toUpload = concepts.filter(c => c.imageB64);
+    if (toUpload.length === 0) { populateCampaignSelector(); switchView('dashboard'); return; }
+
+    const destUrl = destinationUrl || $('destinationUrl')?.value?.trim() || '';
+    if (!destUrl) {
+        showStatus('campaignStatus', '⚠️ Campaña lanzada pero sin URL de destino para subir imágenes', 'warning');
+        populateCampaignSelector(); switchView('dashboard'); return;
+    }
+
+    const newAdIds = [...(campaign.adIds || [])];
+    let uploaded = 0, failed = 0;
+
+    for (let i = 0; i < Math.min(toUpload.length, adSetIds.length); i++) {
+        const concept = toUpload[i];
+        const adSetId = adSetIds[i];
+        if (!adSetId) continue;
+
+        showStatus('campaignStatus', `📤 Subiendo imagen ${i + 1}/${toUpload.length} a Meta...`, 'info');
+
+        try {
+            const res = await fetch('/api/meta-upload-creative', {
+                method: 'POST',
+                headers: metaHeaders(),
+                body: JSON.stringify({
+                    adSetId,
+                    imageB64: concept.imageB64,
+                    headline: concept.headline,
+                    body: concept.body,
+                    destinationUrl: destUrl
+                })
+            });
+            const d = await res.json();
+            if (!res.ok) throw new Error(d.error);
+            newAdIds.push(d.adId);
+            uploaded++;
+        } catch (e) {
+            console.warn(`Upload failed adSet ${adSetId}: ${e.message}`);
+            failed++;
+        }
+    }
+
+    // Persist updated adIds
+    const idx = state.campaigns.findIndex(c => c.id === campaign.id);
+    if (idx >= 0) { state.campaigns[idx].adIds = newAdIds; saveState(); }
+
+    const msg = failed > 0
+        ? `✅ Campaña activa — ${uploaded} imagen${uploaded !== 1 ? 'es' : ''} subida${uploaded !== 1 ? 's' : ''}, ${failed} fallaron`
+        : `✅ Campaña activa con ${uploaded} imagen${uploaded !== 1 ? 'es' : ''} — ID: ${campaign.id}`;
+    showStatus('campaignStatus', msg, uploaded > 0 ? 'success' : 'error');
+
+    populateCampaignSelector();
+    switchView('dashboard');
+    // Show upload panel if there are concepts still without images
+    setTimeout(checkPendingUploads, 500);
+}
+
+function checkPendingUploads() {
+    const sel = $('campaignSelector');
+    const campaignId = sel?.value;
+    const panel = $('pendingImagesPanel');
+    if (!panel) return;
+
+    const campaign = state.campaigns.find(c => c.id === campaignId);
+    if (!campaign || campaign.platform !== 'meta') { panel.classList.add('hidden'); return; }
+
+    const angles = campaign.conceptAngles || [];
+    const concepts = angles.map(a => state.concepts.find(c => c.angle === a)).filter(c => c?.imageB64);
+    const pendingCount = concepts.length - (campaign.adIds?.length || 0);
+
+    if (pendingCount <= 0) { panel.classList.add('hidden'); return; }
+
+    panel.classList.remove('hidden');
+    $('pendingCount').textContent = pendingCount;
+}
+
+async function uploadToExistingCampaign() {
+    const campaignId = $('campaignSelector').value;
+    const campaign = state.campaigns.find(c => c.id === campaignId);
+    if (!campaign) return;
+
+    $('btnUploadPending').disabled = true;
+    $('btnUploadPending').textContent = 'Subiendo...';
+
+    await uploadPendingImages(campaign, null);
+
+    $('btnUploadPending').disabled = false;
+    $('btnUploadPending').textContent = 'Subir imágenes';
+    checkPendingUploads();
 }
 
 // ── Dashboard ──────────────────────────────────────────────
