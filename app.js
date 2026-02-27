@@ -42,11 +42,14 @@ const tiktokHeaders = () => ({
     'x-tiktok-advertiser': localStorage.getItem('tiktok_advertiser') || '',
     'Content-Type': 'application/json'
 });
-const aiHeaders = () => ({
-    'x-anthropic-key': localStorage.getItem('anthropic_key') || '',
-    'x-openai-key': localStorage.getItem('openai_key') || '',
-    'Content-Type': 'application/json'
-});
+const aiHeaders = () => {
+    const h = { 'Content-Type': 'application/json' };
+    const anth = localStorage.getItem('anthropic_key');
+    const oai  = localStorage.getItem('openai_key');
+    if (anth) h['x-anthropic-key'] = anth;
+    if (oai)  h['x-openai-key']    = oai;
+    return h;
+};
 
 function showStatus(elId, msg, type = 'info') {
     const el = $(elId);
@@ -1380,6 +1383,11 @@ async function sendChatMessage() {
     const input = $('chatInput');
     const text = input.value.trim();
     if (!text) return;
+
+    if (!localStorage.getItem('anthropic_key')) {
+        renderChatMsg('error', '⚠️ Falta la clave de Jarvi. Ve a <strong>Configuración → APIs de Inteligencia Artificial</strong>, pega tu clave de Anthropic y guarda.');
+        return;
+    }
 
     input.value = '';
     renderChatMsg('user', text);
