@@ -926,10 +926,13 @@ async function launchCampaign() {
         $('badgeDashboard').classList.add('visible');
         hideLoader();
 
-        const successMsg = `⏸️ Campaña creada en PAUSA — revísala en Meta Ads Manager y actívala cuando estés listo\n(ID: ${data.campaignId}, ${data.adSetIds.length} Ad Sets)`;
-        showStatus('campaignStatus', successMsg, 'success');
+        // Show warnings from API (creative/ad failures)
+        const warnLines = data.warnings?.length
+            ? `\n⚠️ ${data.warnings.join('\n⚠️ ')}` : '';
+        const successMsg = `⏸️ Campaña creada en PAUSA — ${data.adSetIds.length} Ad Sets, ${data.adIds.length} Ads (ID: ${data.campaignId})${warnLines}`;
+        showStatus('campaignStatus', successMsg, data.warnings?.length ? 'warning' : 'success');
 
-        // Auto-upload AI-generated images if platform is Meta and concepts have imageB64
+        // Auto-upload AI-generated images if platform is Meta and any concept has imageB64
         const hasImages = platform === 'meta' && selected.some(c => c.imageB64);
         if (hasImages) {
             setTimeout(() => uploadPendingImages(campaign, selected), 800);
@@ -956,8 +959,8 @@ async function uploadPendingImages(campaign, conceptsArg) {
         concepts = angles.map(angle => state.concepts.find(c => c.angle === angle)).filter(Boolean);
     }
 
-    const toUpload = concepts.filter(c => c.imageB64);
-    if (toUpload.length === 0) { populateCampaignSelector(); switchView('dashboard'); return; }
+    const hasAnyImage = concepts.some(c => c.imageB64);
+    if (!hasAnyImage) { populateCampaignSelector(); switchView('dashboard'); return; }
 
     const destUrl = destinationUrl || $('destinationUrl')?.value?.trim() || '';
     if (!destUrl) {
@@ -967,11 +970,13 @@ async function uploadPendingImages(campaign, conceptsArg) {
 
     const newAdIds = [...(campaign.adIds || [])];
     let uploaded = 0, failed = 0;
+    const uploadErrors = [];
 
-    for (let i = 0; i < Math.min(toUpload.length, adSetIds.length); i++) {
-        const concept = toUpload[i];
+    // Iterate keeping index aligned: concepts[i] → adSetIds[i]
+    for (let i = 0; i < Math.min(concepts.length, adSetIds.length); i++) {
+        const concept = concepts[i];
         const adSetId = adSetIds[i];
-        if (!adSetId) continue;
+        if (!concept?.imageB64 || !adSetId) continue;
 
         showStatus('campaignStatus', `📤 Subiendo imagen ${i + 1}/${toUpload.length} a Meta...`, 'info');
 
@@ -992,7 +997,7 @@ async function uploadPendingImages(campaign, conceptsArg) {
             newAdIds.push(d.adId);
             uploaded++;
         } catch (e) {
-            console.warn(`Upload failed adSet ${adSetId}: ${e.message}`);
+            uploadErrors.push(`AdSet ${adSetId}: ${e.message}`);
             failed++;
         }
     }
@@ -1001,8 +1006,9 @@ async function uploadPendingImages(campaign, conceptsArg) {
     const idx = state.campaigns.findIndex(c => c.id === campaign.id);
     if (idx >= 0) { state.campaigns[idx].adIds = newAdIds; saveState(); }
 
+    const errorDetail = uploadErrors.length ? `\n⚠️ ${uploadErrors.join('\n⚠️ ')}` : '';
     const msg = failed > 0
-        ? `⏸️ Campaña en pausa — ${uploaded} imagen${uploaded !== 1 ? 'es' : ''} subida${uploaded !== 1 ? 's' : ''}, ${failed} fallaron. Revisa en Meta Ads Manager`
+        ? `⏸️ Campaña en pausa — ${uploaded} imagen${uploaded !== 1 ? 'es' : ''} subida${uploaded !== 1 ? 's' : ''}, ${failed} fallaron${errorDetail}`
         : `⏸️ Campaña en pausa con ${uploaded} imagen${uploaded !== 1 ? 'es' : ''} — Actívala en Meta Ads Manager cuando estés listo`;
     showStatus('campaignStatus', msg, uploaded > 0 ? 'success' : 'error');
 

@@ -51,6 +51,7 @@ export default async function handler(req, res) {
 
         const adSetIds = [];
         const adIds = [];
+        const warnings = [];
 
         // ── 2. Create Ad Set + Creative + Ad per concept ────
         for (const concept of concepts) {
@@ -112,33 +113,34 @@ export default async function handler(req, res) {
             };
 
             // Creative + Ad
-            let creativeId;
-            if (pageId) {
+            if (!pageId) {
+                warnings.push('Sin Page ID: no se creó el anuncio. Añade tu Facebook Page ID en Configuración.');
+            } else {
+                let creativeId;
                 try {
                     const creative = await gql(`${account}/adcreatives`, 'POST', token, creativeBody);
                     creativeId = creative.id;
                 } catch (e) {
-                    console.warn(`Creative failed (page ID issue?): ${e.message}`);
+                    warnings.push(`Creative falló (${concept.angle.substring(0, 20)}): ${e.message}`);
                 }
-            }
 
-            if (creativeId) {
-                try {
-                    const adBody = {
-                        adset_id: adSet.id,
-                        name: `Ad_${concept.angle.substring(0, 30)}`,
-                        creative: { creative_id: creativeId },
-                        status: 'PAUSED'
-                    };
-                    const ad = await gql(`${account}/ads`, 'POST', token, adBody);
-                    adIds.push(ad.id);
-                } catch (e) {
-                    console.warn(`Ad creation failed: ${e.message}`);
+                if (creativeId) {
+                    try {
+                        const ad = await gql(`${account}/ads`, 'POST', token, {
+                            adset_id: adSet.id,
+                            name: `Ad_${concept.angle.substring(0, 30)}`,
+                            creative: { creative_id: creativeId },
+                            status: 'PAUSED'
+                        });
+                        adIds.push(ad.id);
+                    } catch (e) {
+                        warnings.push(`Ad falló (${concept.angle.substring(0, 20)}): ${e.message}`);
+                    }
                 }
             }
         }
 
-        return res.json({ campaignId: campaign.id, adSetIds, adIds });
+        return res.json({ campaignId: campaign.id, adSetIds, adIds, warnings });
 
     } catch (err) {
         console.error('meta-create-campaign error:', err);
