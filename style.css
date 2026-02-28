@@ -840,6 +840,53 @@ button[disabled] {
   color: var(--text-dim);
 }
 
+/* Plan platform badge on card */
+.plan-platform-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 500;
+  background: rgba(99,102,241,0.15);
+  border: 1px solid rgba(99,102,241,0.25);
+  color: #a5b4fc;
+  padding: 1px 7px;
+  border-radius: 20px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+
+/* Plan Modal top row: name + platform side by side */
+.plan-modal-top-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.plan-platform-group { flex-shrink: 0; }
+
+.plan-platform-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.plan-platform-tab {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.plan-platform-tab:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.plan-platform-tab.active {
+  background: rgba(99,102,241,0.2);
+  border-color: rgba(99,102,241,0.5);
+  color: #a5b4fc;
+}
+
 /* Plan Modal */
 .plan-modal-box {
   width: 560px;

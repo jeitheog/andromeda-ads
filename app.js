@@ -1700,6 +1700,16 @@ function initScalingPlans() {
     $('btnCancelPlan').addEventListener('click', closePlanModal);
     $('btnClosePlanModal').addEventListener('click', closePlanModal);
     $('planModal').addEventListener('click', e => { if (e.target === $('planModal')) closePlanModal(); });
+
+    // Platform tab switching
+    $('planPlatformTabs').addEventListener('click', e => {
+        const tab = e.target.closest('.plan-platform-tab');
+        if (!tab) return;
+        document.querySelectorAll('.plan-platform-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        $('planPlatformInput').value = tab.dataset.platform;
+    });
+
     renderPlans();
 }
 
@@ -1707,6 +1717,14 @@ function openPlanModal(plan = null) {
     editingPlanId = plan ? plan.id : null;
     $('planModalTitle').textContent = plan ? 'Editar plan' : 'Nuevo plan de escalado';
     $('planNameInput').value = plan ? plan.name : '';
+
+    // Set platform tabs
+    const platform = plan?.platform || 'meta';
+    $('planPlatformInput').value = platform;
+    document.querySelectorAll('.plan-platform-tab').forEach(t => {
+        t.classList.toggle('active', t.dataset.platform === platform);
+    });
+
     $('planRulesContainer').innerHTML = '';
     const rules = plan ? plan.rules : [{}];
     rules.forEach(r => addRuleRow(r));
@@ -1774,12 +1792,13 @@ function savePlan() {
 
     if (!rules.length) { showToast('Añade al menos una regla'); return; }
 
+    const platform = $('planPlatformInput').value || 'meta';
     const list = loadPlans();
     if (editingPlanId) {
         const idx = list.findIndex(p => p.id === editingPlanId);
-        if (idx >= 0) list[idx] = { ...list[idx], name, rules };
+        if (idx >= 0) list[idx] = { ...list[idx], name, platform, rules };
     } else {
-        list.unshift({ id: Date.now(), name, rules, createdAt: new Date().toLocaleDateString('es', { day:'2-digit', month:'short', year:'numeric' }), lastRun: null });
+        list.unshift({ id: Date.now(), name, platform, rules, createdAt: new Date().toLocaleDateString('es', { day:'2-digit', month:'short', year:'numeric' }), lastRun: null });
     }
     persistPlans(list);
     closePlanModal();
@@ -1811,10 +1830,13 @@ function renderPlans() {
             </div>`;
         }).join('');
 
+        const platformIcon = { meta: '📘', google: '🔵', tiktok: '🎵' }[plan.platform || 'meta'] || '📘';
+        const platformLabel = { meta: 'Meta', google: 'Google', tiktok: 'TikTok' }[plan.platform || 'meta'] || 'Meta';
+
         return `<div class="plan-card" data-plan-id="${plan.id}">
             <div class="plan-card-header">
                 <div>
-                    <div class="plan-card-name">${plan.name}</div>
+                    <div class="plan-card-name">${plan.name} <span class="plan-platform-badge">${platformIcon} ${platformLabel}</span></div>
                     <div class="plan-card-meta">${plan.rules.length} regla${plan.rules.length !== 1 ? 's' : ''} · Creado ${plan.createdAt}${plan.lastRun ? ` · Ejecutado ${plan.lastRun}` : ''}</div>
                 </div>
                 <div class="plan-card-actions">
@@ -1846,14 +1868,32 @@ window.runPlan = async function(id) {
     const plan = loadPlans().find(p => p.id === id);
     if (!plan) return;
 
+    const platform = plan.platform || 'meta';
     const btn = document.querySelector(`.plan-card[data-plan-id="${id}"] .btn-run-plan`);
     const resultEl = $(`planResult_${id}`);
+
+    // Validate platform matches campaign
+    const campaign = state.campaigns.find(c => c.id === campaignId);
+    if (campaign && campaign.platform && campaign.platform !== platform) {
+        showToast(`Este plan es para ${platform.toUpperCase()} pero la campaña seleccionada es de ${(campaign.platform).toUpperCase()}`);
+        return;
+    }
+
+    // Google and TikTok endpoints coming soon
+    if (platform !== 'meta') {
+        if (resultEl) {
+            resultEl.innerHTML = `⏳ Planes de escalado para <strong>${platform}</strong> — próximamente`;
+            resultEl.classList.remove('hidden');
+        }
+        showToast(`Escalado automático para ${platform} próximamente`);
+        return;
+    }
     if (btn) { btn.disabled = true; btn.textContent = 'Ejecutando...'; }
 
     try {
         const res = await fetch('/api/meta-scaling-plan', {
             method: 'POST',
-            headers: { ...metaHeaders(), ...aiHeaders() },
+            headers: metaHeaders(),
             body: JSON.stringify({ campaignId, rules: plan.rules })
         });
         const data = await res.json();
