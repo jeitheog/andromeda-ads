@@ -1682,7 +1682,215 @@ function initChat() {
     });
 }
 
+// ── Scaling Plans ──────────────────────────────────────────
+const PLANS_KEY = 'andromeda_scaling_plans';
+const METRICS   = { roas: 'ROAS', ctr: 'CTR (%)', cpm: 'CPM ($)', spend: 'Gasto ($)', impressions: 'Impresiones', conversions: 'Conversiones' };
+const OPERATORS = { '>': 'mayor que', '<': 'menor que', '>=': 'mayor o igual', '<=': 'menor o igual' };
+const ACTIONS   = { scale_budget: 'Aumentar presupuesto', reduce_budget: 'Reducir presupuesto', pause: 'Pausar anuncio', activate: 'Activar anuncio' };
+
+let editingPlanId = null;
+
+function loadPlans()    { try { return JSON.parse(localStorage.getItem(PLANS_KEY) || '[]'); } catch { return []; } }
+function persistPlans(l){ localStorage.setItem(PLANS_KEY, JSON.stringify(l)); }
+
+function initScalingPlans() {
+    $('btnNewPlan').addEventListener('click', () => openPlanModal());
+    $('btnAddRule').addEventListener('click', addRuleRow);
+    $('btnSavePlan').addEventListener('click', savePlan);
+    $('btnCancelPlan').addEventListener('click', closePlanModal);
+    $('btnClosePlanModal').addEventListener('click', closePlanModal);
+    $('planModal').addEventListener('click', e => { if (e.target === $('planModal')) closePlanModal(); });
+    renderPlans();
+}
+
+function openPlanModal(plan = null) {
+    editingPlanId = plan ? plan.id : null;
+    $('planModalTitle').textContent = plan ? 'Editar plan' : 'Nuevo plan de escalado';
+    $('planNameInput').value = plan ? plan.name : '';
+    $('planRulesContainer').innerHTML = '';
+    const rules = plan ? plan.rules : [{}];
+    rules.forEach(r => addRuleRow(r));
+    $('planModal').classList.remove('hidden');
+    setTimeout(() => $('planNameInput').focus(), 100);
+}
+
+function closePlanModal() { $('planModal').classList.add('hidden'); }
+
+function addRuleRow(rule = {}) {
+    const id = Date.now() + Math.random();
+    const div = document.createElement('div');
+    div.className = 'plan-rule-builder';
+    div.dataset.ruleId = id;
+
+    const actionNeedsValue = v => v === 'scale_budget' || v === 'reduce_budget';
+
+    div.innerHTML = `
+        <button class="btn-remove-rule" onclick="this.closest('.plan-rule-builder').remove()" title="Eliminar regla">✕</button>
+        <div class="rule-builder-if">
+            <span class="rule-badge-if">SI</span>
+            <select class="rule-select rule-metric">
+                ${Object.entries(METRICS).map(([k,v]) => `<option value="${k}" ${rule.metric===k?'selected':''}>${v}</option>`).join('')}
+            </select>
+            <select class="rule-select rule-operator">
+                ${Object.entries(OPERATORS).map(([k,v]) => `<option value="${k}" ${rule.operator===k?'selected':''}>${v}</option>`).join('')}
+            </select>
+            <input class="rule-input rule-input-sm rule-threshold" type="number" step="0.01" min="0" value="${rule.threshold ?? ''}" placeholder="0" />
+        </div>
+        <div class="rule-builder-then">
+            <span class="rule-badge-then">ENTONCES</span>
+            <select class="rule-select rule-action">
+                ${Object.entries(ACTIONS).map(([k,v]) => `<option value="${k}" ${rule.action===k?'selected':''}>${v}</option>`).join('')}
+            </select>
+            <span class="rule-action-suffix" style="font-size:12px;color:var(--text-dim)">en</span>
+            <input class="rule-input rule-input-sm rule-action-val" type="number" min="1" max="500" value="${rule.actionValue ?? 50}" placeholder="50" style="${actionNeedsValue(rule.action||'scale_budget')?'':'display:none'}" />
+            <span class="rule-action-pct" style="font-size:12px;color:var(--text-dim);${actionNeedsValue(rule.action||'scale_budget')?'':'display:none'}">%</span>
+        </div>
+    `;
+
+    // Show/hide % input based on action
+    div.querySelector('.rule-action').addEventListener('change', function () {
+        const show = actionNeedsValue(this.value);
+        div.querySelector('.rule-action-suffix').style.display = show ? '' : 'none';
+        div.querySelector('.rule-action-val').style.display    = show ? '' : 'none';
+        div.querySelector('.rule-action-pct').style.display    = show ? '' : 'none';
+    });
+
+    $('planRulesContainer').appendChild(div);
+}
+
+function savePlan() {
+    const name = $('planNameInput').value.trim();
+    if (!name) { $('planNameInput').focus(); return; }
+
+    const rules = [];
+    document.querySelectorAll('.plan-rule-builder').forEach(row => {
+        const metric    = row.querySelector('.rule-metric').value;
+        const operator  = row.querySelector('.rule-operator').value;
+        const threshold = parseFloat(row.querySelector('.rule-threshold').value);
+        const action    = row.querySelector('.rule-action').value;
+        const actionValue = parseFloat(row.querySelector('.rule-action-val').value) || 50;
+        if (!isNaN(threshold)) rules.push({ metric, operator, threshold, action, actionValue });
+    });
+
+    if (!rules.length) { showToast('Añade al menos una regla'); return; }
+
+    const list = loadPlans();
+    if (editingPlanId) {
+        const idx = list.findIndex(p => p.id === editingPlanId);
+        if (idx >= 0) list[idx] = { ...list[idx], name, rules };
+    } else {
+        list.unshift({ id: Date.now(), name, rules, createdAt: new Date().toLocaleDateString('es', { day:'2-digit', month:'short', year:'numeric' }), lastRun: null });
+    }
+    persistPlans(list);
+    closePlanModal();
+    renderPlans();
+}
+
+function renderPlans() {
+    const list = loadPlans();
+    const container = $('scalingPlansList');
+    if (!container) return;
+
+    if (!list.length) {
+        container.innerHTML = `<p class="scaling-empty">No hay planes. Crea uno con el botón de arriba.</p>`;
+        return;
+    }
+
+    container.innerHTML = list.map(plan => {
+        const rulesHtml = plan.rules.map(r => {
+            const metricLabel = METRICS[r.metric] || r.metric;
+            const opLabel     = OPERATORS[r.operator] || r.operator;
+            const actionLabel = ACTIONS[r.action] || r.action;
+            const actionSuffix = (r.action === 'scale_budget' || r.action === 'reduce_budget') ? ` ${r.actionValue}%` : '';
+            return `<div class="plan-rule-row">
+                <span class="rule-if">SI</span>
+                <span class="rule-condition">${metricLabel} ${opLabel} <strong>${r.threshold}</strong></span>
+                <span style="color:var(--text-dim)">→</span>
+                <span class="rule-then">ENTONCES</span>
+                <span class="rule-action">${actionLabel}${actionSuffix}</span>
+            </div>`;
+        }).join('');
+
+        return `<div class="plan-card" data-plan-id="${plan.id}">
+            <div class="plan-card-header">
+                <div>
+                    <div class="plan-card-name">${plan.name}</div>
+                    <div class="plan-card-meta">${plan.rules.length} regla${plan.rules.length !== 1 ? 's' : ''} · Creado ${plan.createdAt}${plan.lastRun ? ` · Ejecutado ${plan.lastRun}` : ''}</div>
+                </div>
+                <div class="plan-card-actions">
+                    <button class="btn-run-plan" onclick="window.runPlan(${plan.id})" title="Ejecutar sobre la campaña seleccionada">▶ Ejecutar</button>
+                    <button class="btn-edit-plan" onclick="window.editPlan(${plan.id})">✏</button>
+                    <button class="btn-delete-plan" onclick="window.deletePlan(${plan.id})">🗑</button>
+                </div>
+            </div>
+            <div class="plan-rules-preview">${rulesHtml}</div>
+            <div class="plan-run-result hidden" id="planResult_${plan.id}"></div>
+        </div>`;
+    }).join('');
+}
+
+window.editPlan = function(id) {
+    const plan = loadPlans().find(p => p.id === id);
+    if (plan) openPlanModal(plan);
+};
+
+window.deletePlan = function(id) {
+    persistPlans(loadPlans().filter(p => p.id !== id));
+    renderPlans();
+};
+
+window.runPlan = async function(id) {
+    const campaignId = $('campaignSelector')?.value;
+    if (!campaignId) { showToast('Selecciona primero una campaña en el dashboard'); return; }
+
+    const plan = loadPlans().find(p => p.id === id);
+    if (!plan) return;
+
+    const btn = document.querySelector(`.plan-card[data-plan-id="${id}"] .btn-run-plan`);
+    const resultEl = $(`planResult_${id}`);
+    if (btn) { btn.disabled = true; btn.textContent = 'Ejecutando...'; }
+
+    try {
+        const res = await fetch('/api/meta-scaling-plan', {
+            method: 'POST',
+            headers: { ...metaHeaders(), ...aiHeaders() },
+            body: JSON.stringify({ campaignId, rules: plan.rules })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+
+        // Update lastRun
+        const list = loadPlans();
+        const idx  = list.findIndex(p => p.id === id);
+        if (idx >= 0) { list[idx].lastRun = new Date().toLocaleDateString('es', { day:'2-digit', month:'short' }); persistPlans(list); }
+
+        const applied = data.applied || [];
+        const resultText = applied.length
+            ? applied.map(a => `✅ ${a.adName}: ${a.action}`).join('<br>')
+            : '— Ningún anuncio cumplió las condiciones';
+
+        if (resultEl) {
+            resultEl.innerHTML = `<strong>Resultado:</strong><br>${resultText}`;
+            resultEl.classList.remove('hidden');
+        }
+        renderPlans();
+    } catch (err) {
+        if (resultEl) { resultEl.innerHTML = `❌ ${err.message}`; resultEl.classList.remove('hidden'); }
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = '▶ Ejecutar'; }
+    }
+};
+
+function showToast(msg) {
+    const t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1e3a;border:1px solid rgba(99,102,241,0.4);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.4)';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+}
+
 // ── Boot ───────────────────────────────────────────────────
 init();
 initChat();
 renderStrategies();
+initScalingPlans();
