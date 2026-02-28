@@ -1340,6 +1340,38 @@ button[disabled] {
   font-size: 13px;
 }
 
+/* ── Meta Token Expired Banner ── */
+.meta-expired-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9000;
+  background: linear-gradient(135deg, #7c2d12, #92400e);
+  border-bottom: 2px solid #f97316;
+  padding: 10px 20px;
+}
+.meta-expired-content {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: 900px;
+  margin: 0 auto;
+  font-size: 13px;
+  color: #fed7aa;
+}
+.meta-expired-content span { flex: 1; }
+.meta-expired-close {
+  background: none;
+  border: none;
+  color: #fed7aa;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 4px;
+  opacity: 0.7;
+}
+.meta-expired-close:hover { opacity: 1; }
+
 /* ── AI Keys ── */
 .ai-keys-card {
   margin-bottom: 20px;

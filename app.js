@@ -60,6 +60,34 @@ function showStatus(elId, msg, type = 'info') {
 }
 function hideStatus(elId) { $(elId)?.classList.add('hidden'); }
 
+// ── Meta token expiry ───────────────────────────────────────
+function showMetaTokenExpiredBanner() {
+    if (document.getElementById('metaTokenExpiredBanner')) return; // already shown
+    const banner = document.createElement('div');
+    banner.id = 'metaTokenExpiredBanner';
+    banner.className = 'meta-expired-banner';
+    banner.innerHTML = `
+        <div class="meta-expired-content">
+            <span>🔑 Tu token de Meta ha expirado. Obtén uno nuevo en Graph API Explorer y actualízalo en Configuración.</span>
+            <button class="btn btn-primary btn-sm" onclick="window.goToMetaTokenSetup()">Renovar token →</button>
+            <button class="meta-expired-close" onclick="document.getElementById('metaTokenExpiredBanner').remove()">✕</button>
+        </div>
+    `;
+    document.querySelector('.sidebar + .main-content, main, .content, body')?.prepend(banner)
+        || document.body.appendChild(banner);
+}
+
+window.goToMetaTokenSetup = function() {
+    document.getElementById('metaTokenExpiredBanner')?.remove();
+    switchView('setup');
+    setTimeout(() => { openMetaPanel?.(); $('metaToken')?.focus(); }, 150);
+};
+
+function checkTokenExpired(data) {
+    if (data?.tokenExpired) { showMetaTokenExpiredBanner(); return true; }
+    return false;
+}
+
 function showLoader(msg = 'Procesando...') {
     let el = document.getElementById('loaderOverlay');
     if (!el) {
@@ -579,6 +607,10 @@ async function verifyMeta() {
             body: JSON.stringify({ token, adAccountId: account, pageId: page })
         });
         const data = await res.json();
+        if (data.tokenExpired) {
+            showStatus('metaStatus', '❌ Token expirado. Genera uno nuevo en Graph API Explorer.', 'error');
+            return;
+        }
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
         localStorage.setItem('meta_token', token);
@@ -1305,10 +1337,11 @@ async function refreshStats() {
     try {
         const res = await fetch(url, { headers });
         const data = await res.json();
+        if (checkTokenExpired(data)) return;
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
         renderStats(data);
     } catch (err) {
-        alert(`Error al obtener stats: ${err.message}`);
+        showToast(`Error al obtener stats: ${err.message}`);
     } finally {
         $('btnRefreshStats').innerHTML = '↺ Actualizar';
     }
@@ -1897,6 +1930,10 @@ window.runPlan = async function(id) {
             body: JSON.stringify({ campaignId, rules: plan.rules })
         });
         const data = await res.json();
+        if (checkTokenExpired(data)) {
+            if (resultEl) { resultEl.innerHTML = '❌ Token de Meta expirado — renuévalo en Configuración'; resultEl.classList.remove('hidden'); }
+            return;
+        }
         if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
         // Update lastRun

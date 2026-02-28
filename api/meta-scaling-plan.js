@@ -2,6 +2,12 @@ export const config = { maxDuration: 60 };
 
 const BASE = 'https://graph.facebook.com/v19.0';
 
+function metaError(d) {
+    const e = new Error(d.error.message || JSON.stringify(d.error));
+    e.code = d.error.code;
+    return e;
+}
+
 async function gql(path, method, token, body) {
     const r = await fetch(`${BASE}/${path}`, {
         method,
@@ -9,7 +15,7 @@ async function gql(path, method, token, body) {
         body: JSON.stringify({ ...body, access_token: token })
     });
     const d = await r.json();
-    if (d.error) throw new Error(d.error.message || JSON.stringify(d.error));
+    if (d.error) throw metaError(d);
     return d;
 }
 
@@ -43,6 +49,10 @@ export default async function handler(req, res) {
             `${BASE}/${account}/ads?fields=id,name,status,adset_id&filtering=[{"field":"campaign.id","operator":"EQUAL","value":"${campaignId}"}]&limit=50&access_token=${token}`
         );
         const adsData = await adsRes.json();
+        if (adsData.error) {
+            if (adsData.error.code === 190) return res.status(401).json({ error: adsData.error.message, tokenExpired: true });
+            throw metaError(adsData);
+        }
         const ads = adsData.data || [];
 
         if (!ads.length) return res.json({ applied: [], message: 'No se encontraron anuncios en esta campaña' });
@@ -122,6 +132,7 @@ export default async function handler(req, res) {
         return res.json({ applied, total: ads.length });
 
     } catch (err) {
-        return res.status(500).json({ error: err.message });
+        const status = err.code === 190 ? 401 : 500;
+        return res.status(status).json({ error: err.message, tokenExpired: err.code === 190 });
     }
 }

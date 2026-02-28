@@ -12,7 +12,10 @@ export default async function handler(req, res) {
         // Validate token + fetch ad account name
         const r = await fetch(`https://graph.facebook.com/v19.0/${accountId}?fields=name,account_status,currency&access_token=${token}`);
         const d = await r.json();
-        if (d.error) throw new Error(d.error.error_user_msg || d.error.message || JSON.stringify(d.error));
+        if (d.error) {
+            if (d.error.code === 190) return res.status(401).json({ error: d.error.error_user_msg || d.error.message, tokenExpired: true });
+            throw new Error(d.error.error_user_msg || d.error.message || JSON.stringify(d.error));
+        }
         return res.json({ accountName: d.name, currency: d.currency, status: d.account_status });
     } catch (err) {
         return res.status(401).json({ error: err.message });

@@ -18,7 +18,10 @@ export default async function handler(req, res) {
             `${BASE}/${campaignId}/insights?fields=${FIELDS}&date_preset=last_7d&access_token=${token}`
         );
         const campData = await campRes.json();
-        if (campData.error) throw new Error(campData.error.message);
+        if (campData.error) {
+            if (campData.error.code === 190) return res.status(401).json({ error: campData.error.message, tokenExpired: true });
+            throw new Error(campData.error.message);
+        }
         const campInsights = campData.data?.[0] || {};
 
         // Ad-level insights
@@ -26,7 +29,10 @@ export default async function handler(req, res) {
             `${BASE}/${campaignId}/ads?fields=id,name,insights{${FIELDS}}&access_token=${token}`
         );
         const adsData = await adsRes.json();
-        if (adsData.error) throw new Error(adsData.error.message);
+        if (adsData.error) {
+            if (adsData.error.code === 190) return res.status(401).json({ error: adsData.error.message, tokenExpired: true });
+            throw new Error(adsData.error.message);
+        }
 
         const ads = (adsData.data || []).map(ad => {
             const ins = ad.insights?.data?.[0] || {};
